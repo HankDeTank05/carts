@@ -1,0 +1,12 @@
+--Created with the Pico-8 Word Processor by Mkol103--
+(Word Count: 26. Time Exported: 05:27 pm)
+
+Welcome to the Pico-8
+Word Processor.
+Press the "tab" key
+to access the menu.
+Remember to export your
+work once you've finished.
+
+All BGM by: @robbyduguay
+
