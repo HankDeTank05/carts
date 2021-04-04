@@ -7,10 +7,39 @@ __lua__
 function _init()
 
 	songs={
-		"last young renegade"
+		"last young renegade",
+		"20 dollar nose bleed"
+	}
+	
+	artists={
+		"all time low",
+		"fall out boy"
+	}
+	
+	albums={
+		"last young renegade",
+		"folie a deux"
+	}
+	
+	years={
+		"2017",
+		"2008"
+	}
+	
+	patterns={
+		0
 	}
 
 	cur=1
+	
+	playing=false
+	
+	now_playing=""
+	
+	current_song=songs[cur]
+	current_artist=artists[cur]
+	current_album=albums[cur]
+	current_year=years[cur]
 
 end
 
@@ -30,11 +59,55 @@ function _update60()
 			cur=#songs
 		end
 	
+	elseif btnp(❎) then
+	
+		if playing then
+			music(-1)
+			playing=false
+			
+		elseif cur==1 then
+			music(patterns[cur])
+			playing=true
+			now_playing=songs[cur]
+			
+		end
+	
 	end
+	
+	current_song=songs[cur]
+	current_artist=artists[cur]
+	current_album=albums[cur]
+	current_year=years[cur]
 
 end
 
 function _draw()
+
+	cls()
+	
+	// fill the screen dark blue
+	rectfill(0,0,127,127,1)
+
+	// draw top bar
+	rectfill(0,0,127,7,8)
+	print("hank's jukebox vol. 1",1,1,2)
+	
+	// draw album art and ui
+	rectfill(0,88,127,120,0)
+	sspr(8,0,39,31,1,89)
+	print(current_song,34,90,7)
+	print(current_artist,34,98,7)
+	print(current_album,34,106,7)
+	print(current_year,34,114,7)
+	
+	// draw bottom bar
+	rectfill(0,121,127,127,8)
+	if playing then
+		print("now playing: "..now_playing,1,122,2)		
+	else
+		print("paused",1,122,2)
+	end
+
 end
 __gfx__
 00000000611d6dd66d6661616166116d6d6d6d660000000066666666666666666666666666666666000000000000000000000000000000000000000000000000
