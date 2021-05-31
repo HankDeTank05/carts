@@ -27,6 +27,9 @@ function _init()
 	          c=11
 	         }
 	map_to_screen(triangle)
+	c_pitch=0
+	c_yaw=0
+	c={0,0,-2.5}
 end
 
 function _update()
@@ -39,7 +42,7 @@ function _update()
 	if btn(⬅️) then rot_y_tri(triangle,1) end
 	if btn(➡️) then rot_y_tri(triangle,-1) end
 	if btn(⬆️) then rot_x_tri(triangle,1) end
-	if btn(⬇️) then rot_x_tri(traingle,-1) end
+	if btn(⬇️) then rot_x_tri(triangle,-1) end
 	if btn(🅾️) then rot_z_tri(triangle,1) end
 	if btn(❎) then rot_z_tri(triangle,-1) end
 end
@@ -97,8 +100,8 @@ end
 
 function rot_z_p(p,rad)
 	old=p
-	p[1]=old[1]*cos(rad)-old[2]*sin(rad)
-	p[2]=old[1]*sin(rad)+old[2]*cos(rad)
+	p[1]=old[1]*cos(rad)+old[2]*sin(rad)
+	p[2]=old[1]*-sin(rad)+old[2]*cos(rad)
 end
 
 function rot_z_tri(tri,deg,trans)
@@ -121,8 +124,8 @@ function rot_x_p(p,rad)
 	z-axis with x-axis
  --]]
 	old=p
-	p[2]=old[2]*cos(rad)-old[3]*sin(rad)
-	p[3]=old[2]*sin(rad)+old[3]*cos(rad)
+	p[2]=old[2]*cos(rad)+old[3]*sin(rad)
+	p[3]=old[2]*-sin(rad)+old[3]*cos(rad)
 end
 
 function rot_x_tri(tri,deg,trans)
@@ -157,6 +160,22 @@ function rot_y_tri(tri,deg,trans)
 	rot_y_p(tri[2],rad)
 	rot_y_p(tri[3],rad)
 	translate_tri(tri,{-trans[1],-trans[2],-trans[3]})
+end
+
+function make_view_matrix(c,pitch,yaw)
+	local x={cos(pitch),0,-sin(pitch)}
+	local y={sin(yaw)*sin(pitch),cos(pitch),cos(yaw)*sin(pitch)}
+	local z={sin(yaw)*cos(pitch),-sin(pitch),cos(yaw)}
+	
+	view_matrix={
+		{x[1],y[1],z[1]},
+		{x[2],y[2],z[2]},
+		{x[3],y[3],z[3]},
+		{-dot(x,c),-dot(y,eye),-dot(z,eye)}
+end
+
+function dot(a,b)
+
 end
 
 function map_to_screen(tri)
