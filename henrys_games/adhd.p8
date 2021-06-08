@@ -31,11 +31,11 @@ function _init()
 		link.spry=link.sprs[link.dir].y1
 		
 		students={
-			{sprx=0 ,spry=64,x=16,y=72,col=2},
-			{sprx=16,spry=64,x=16,y=96,col=8},
-			{sprx=32,spry=64,x=48,y=72,col=9},
-			{sprx=48,spry=64,x=48,y=96,col=12},
-			{sprx=64,spry=64,x=80,y=96,col=14}
+			{sprx=0 ,spry=64,x=16,y=71,col=2},
+			{sprx=16,spry=64,x=16,y=95,col=8},
+			{sprx=32,spry=64,x=48,y=71,col=9},
+			{sprx=48,spry=64,x=48,y=95,col=12},
+			{sprx=64,spry=64,x=80,y=95,col=14}
 		}
 		
 		tarin={
