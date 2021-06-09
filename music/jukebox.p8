@@ -100,6 +100,8 @@ function _init()
 	art_dw=72
 	art_dh=72
 	
+	btn_y=107
+	
 	button_diff=1
 	
 	frm_ct=0
@@ -210,9 +212,9 @@ function _draw()
 	if btn(⬅️) then
 		rw+=button_diff
 	end
+	spr(rw,art_dx,btn_y)
 	
 	--draw play/pause button
-	spr(rw,art_dx,110)
 	if playing==true then
 		playpause=32
 	else
@@ -221,14 +223,14 @@ function _draw()
 	if btn(❎) then
 		playpause+=button_diff
 	end
-	spr(playpause,art_dx+32,110)
+	spr(playpause,art_dx+32,btn_y)
 	
 	--draw ff button
 	local ff=0
 	if btn(➡️) then
 		ff+=button_diff
 	end
-	spr(ff,art_dx+64,110)
+	spr(ff,art_dx+64,btn_y)
 
 	// draw top bar
 	rectfill(0,0,127,7,8)
@@ -259,24 +261,24 @@ function _draw()
 	end
 	
 	// these are for debugging
-	print("bpm:"..bpms[cur],82,6*5,11)
+	--print("bpm:"..bpms[cur],82,6*5,11)
 	--print(stat(24),96,64,0)
 	--print(stat(16),96,70,0)
 	--print(stat(17),96,76,0)
 	--print(stat(18),96,82,0)
 	--print(stat(19),96,88,0)
-	print("bpf:"..bpfs[cur],82,6*6,11)
-	print("fpb:"..fpbs[cur],82,6*7,11)
-	print("fct:"..frm_ct,82,6*8,11)
-	print("len:"..frame_length[cur],82,6*9,11)
-	print("mes:"..measure,82,6*10,11)
-	for i=1,4 do
+	--print("bpf:"..bpfs[cur],82,6*6,11)
+	--print("fpb:"..fpbs[cur],82,6*7,11)
+	--print("fct:"..frm_ct,82,6*8,11)
+	--print("len:"..frame_length[cur],82,6*9,11)
+	--print("mes:"..measure,82,6*10,11)
+	--[[for i=1,4 do
 		if ceil(beat)!=i then
 			spr(18,88+8*(i-1),16)
 		else
 			spr(2,88+8*(i-1),16)
 		end
-	end
+	end--]]
 
 end
 -->8
