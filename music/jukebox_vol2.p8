@@ -9,31 +9,26 @@ function _init()
 	songs={
 		"walls",
 		"way less sad",
-		"???"
 	}
 	
 	artists={
 		"all time low",
 		"ajr",
-		"???"
 	}
 	
 	albums={
 		"nothing personal",
 		"ok orchestra",
-		"???"
 	}
 	
 	years={
 		"2009",
 		"2021",
-		"???"
 	}
 	
 	patterns={
 		0,
 		10,
-		-1
 	}
 	
 	art={
