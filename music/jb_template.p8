@@ -59,6 +59,8 @@ function _init()
 	art_dw=72
 	art_dh=72
 	
+	btn_y=107
+	
 	button_diff=1
 	
 	--⬆️+🅾️+❎ to toggle photo mode
@@ -168,17 +170,17 @@ function jukebox_mode()
 	print(current_song,art_dx,88,7)
 	print(current_artist,art_dx,96,6)
 	
-	line(2,104,74,104,6)
-	line(2,104,10,104,8)
+	--line(2,104,74,104,6)
+	--line(2,104,10,104,8)
 	
 	--draw rw button
 	local rw=16
 	if btn(⬅️) then
 		rw+=button_diff
 	end
+	spr(rw,art_dx,btn_y)
 	
 	--draw play/pause button
-	spr(rw,art_dx,110)
 	if playing==true then
 		playpause=32
 	else
@@ -187,14 +189,14 @@ function jukebox_mode()
 	if btn(❎) then
 		playpause+=button_diff
 	end
-	spr(playpause,art_dx+32,110)
+	spr(playpause,art_dx+32,btn_y)
 	
 	--draw ff button
 	local ff=0
 	if btn(➡️) then
 		ff+=button_diff
 	end
-	spr(ff,art_dx+64,110)
+	spr(ff,art_dx+64,btn_y)
 
 	// draw top bar
 	rectfill(0,0,127,7,8)
