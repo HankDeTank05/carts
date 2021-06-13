@@ -271,68 +271,71 @@ wls   : 00/64 : 00%
 
 sfx
 ---
-00:inst. editor 0
-01:inst. editor 1
-02:inst. editor 2
-03:inst. editor 3
-04:inst. editor 4
-05:inst. editor 5
-06:inst. editor 6
+00:inst. editor 0:wls
+01:inst. editor 1:wls
+02:inst. editor 2:wls
+03:inst. editor 3:wls
+04:inst. editor 4:wls
+05:inst. editor 5:walls
+06:inst. editor 6:walls
 07:inst. editor 7
 
-08
-09
-10
-11
-12
-13
-14
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
+08:walls
+09:walls
+10:walls
+11:walls
+12:walls
+13:walls
+14:walls
+16:walls
+17:walls
+18:walls
+19:walls
+20:walls
+21:walls
+22:walls
+23:walls
+24:walls
+25:walls
+
 26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
+
+27:walls
+28:walls
+29:walls
+30:walls
+31:walls
+32:walls
+33:walls
+34:walls
+
+35:wls
+36:wls
+37:wls
+38:wls
+39:wls
+40:wls
+41:wls
+42:wls
+43:wls
+44:wls
+45:wls
+46:wls
+47:wls
+48:wls
+49:wls
+50:wls
+51:wls
+52:wls
+53:wls
+54:wls
+55:wls
+56:wls
+57:wls
+58:wls
+59:wls
+60:wls
+61:wls
 62
 63
 ---
