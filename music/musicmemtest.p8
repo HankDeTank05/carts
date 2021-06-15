@@ -70,7 +70,7 @@ function _init()
 	⬆️released=true
 	
 	loaded=""
-	memval=0x3100
+	memval=0x3200
 
 end
 
@@ -118,7 +118,9 @@ function _update60()
 	
 	elseif btnp(❎) and not(btn(🅾️) or btn(⬆️)) then
 	
-		if playing then
+		sfx(0)
+	
+		--[[if playing then
 			music(-1)
 			playing=false
 			
@@ -133,11 +135,15 @@ function _update60()
 			music(patterns[cur])
 			playing=true
 			
-		end
+		end--]]
 	
 	elseif btnp(⬆️) then
 		
 		memval+=0x04
+		
+	elseif btnp(⬇️) then
+	
+		memval-=0x04
 		
 	end
 	
@@ -247,7 +253,10 @@ function jukebox_mode()
 	--print(stat(18),96,82,0)
 	--print(stat(19),96,88,0)
 	print(loaded,96,92,11)
-	print(memval,96,1,2)
+	print("0x"..num2hex(memval),96,1,2)
+	rectfill(0,0,127,64,0)
+	printsfx(0)
+	--printmusic(0)
 
 end
 
@@ -519,6 +528,73 @@ function num2hex(number)
 
   return resultstr
 end
+
+function printsfx(sfxid)
+	
+	x=0
+	y=0
+	
+	sfxstart=sfxaddr(sfxid)
+	sfxend=sfxstart+67
+
+	for i=sfxstart,sfxend do
+		print(num2hex(peek(i)),x,y,11)
+		x+=10
+		if x>=119 then
+			x=0
+			y+=6
+		end
+	end
+end
+
+function printmusic(patid)
+	
+	musicstart=0x3100+patid*4
+	musicend=musicstart+3
+	
+	for i=musicstart,musicend do
+		print("0x"..num2hex(peek(i)))
+	end
+	
+end
+
+function convertsfxdata(hex_str)
+
+	assert(#hex_str==168)
+
+	--byte #0
+	--0x00==pitch mode
+	--0x01==note entry mode
+	local editor_mode=hex_str[1]..hex_str[2]
+	
+	--byte #1
+	--multiples of 1/128 seconds
+	local note_duration=hex_str[3]..hex_str[4]
+	
+	--byte #2
+	--note number, 0-63
+	local loop_range_start=hex_str[5]..hex_str[6]
+	
+	--byte #3
+	--note number, 0-63
+	local loop_range_end=hex_str[7]..hex_str[8]
+	
+	--bytes 4-84
+	--the rest are notes
+	local notes={}
+	
+	local current_note=""
+	local nybble=0
+	for i=9,168 do
+		--conversion stuff
+		
+		nybble+=1
+		if nybble>4 then
+			nybble=0
+		end
+	end
+
+end
 __gfx__
 76000076070000070005556000000000111111111111111111111111111111118888888888888888888888888888888888888888888888888888888888888888
 77760076077700070005555600000000188111118811888888118811111111118000000000000000000000000000000000000000000000000000000000000008
@@ -648,3 +724,5 @@ __gfx__
 80000000000000000000000000000000000000000000000000000000000000088000000000000000000000000000000000000000000000000000000000000008
 80000000000000000000000000000000000000000000000000000000000000088000000000000000000000000000000000000000000000000000000000000008
 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+__sfx__
+010203041c1651c4541cf4318b321c4211f2100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
