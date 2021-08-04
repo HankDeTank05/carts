@@ -15,15 +15,46 @@ end
 -->8
 --tab 1: util
 -->8
---tab 2: character
+--tab 2: menu
 
-function init_char()
+function init_menu()
+
+	options={
+		"player vs. player",
+		"training"
+	}
+	
+	cur=1
+
 end
 
-function update_char()
+function update_menu()
+
+	if btnp(⬇️) and cur<#options then
+		cur+=1
+	end
+	
+	if btnp(⬆️) and cur>1 then
+		cur-=1
+	end
+	
+	if btnp(❎) then
+		--set the _update60 callback
+		--based on the selected mode
+	end
+
 end
 
-function draw_char()
+function draw_menu()
+end
+-->8
+--tab 3: box
+
+function init_box()
+end
+
+function update_box()
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
