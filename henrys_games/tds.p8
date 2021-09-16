@@ -30,6 +30,8 @@ function return_to_main()
 end
 
 function init_game()
+	game_over=false
+	pickup_rarity=30
 	//seed the rng
 	srand(time())
 	if enable_mouse then
@@ -42,9 +44,10 @@ function init_game()
 	init_zombielist()
 	init_pickuplist()
 	init_particles()
+	init_waves()
 	wave_display=true
 	current_time=time()
-	printh("\n--------\nnew game\n--------\n")
+	//printh("\n--------\nnew game\n--------\n")
 	spawn_zombies()
 end
 
@@ -1969,6 +1972,12 @@ wave_screentime=120
 wave_screentimer=wave_screentime
 wave_display=false
 max_zombies_this_wave=0
+
+function init_waves()
+	wave=0
+	wave_kills=0
+	max_zombies_this_wave=0
+end
 
 function update_wave()
 	if wave_kills==max_zombies_this_wave then
