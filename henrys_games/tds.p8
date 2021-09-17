@@ -12,6 +12,7 @@ enable_mouse=false
 
 function _init()
 	cartdata("hankdetank05_gardeninvasion_0-3-1")
+	init_records()
 	init_menu()
 end
 
@@ -63,6 +64,29 @@ function update60_game()
 	
 	if not game_over then
 		update_player()
+	else
+		//update records here
+		
+		//update high score
+		if player.score > high_score then
+			high_score=player.score
+			dset(0, high_score)
+		end
+		
+		//update furthest wave
+		if wave > furthest_wave then
+			furthest_wave=wave
+			dset(1, furthest_wave)
+		end
+		
+		//update most kills per shot
+		dset(2, most_kills_per_shot)
+		
+		//update most points per shot
+		dset(3, most_points_per_shot)
+		
+		//update lifetime zombie kills
+		dset(4, lifetime_zombie_kills)
 	end
 	
 	update_bulletlist()
@@ -108,6 +132,12 @@ function draw_game()
 	if enable_mouse then
 		draw_mouse()
 	end
+	
+	print("high score: "..high_score)
+	print("furthest wave: "..furthest_wave)
+	print("most kills per shot: "..most_kills_per_shot)
+	print("most points per shot: "..most_points_per_shot)
+	print("lifetime zombie kills: "..lifetime_zombie_kills)
 end
 
 function draw_dirt_ui_box(x,y,w,h)
@@ -2307,13 +2337,25 @@ function update_bglist()
 			bg.score=bg.kills
 			
 			if bg.live_count==0 then
-				
 				//printh("bg.z_ids")
 				//for z_id in all(bg.z_ids) do
 					//printh("\t"..z_id)
 				//end
 				bg.moving=true
 				//del(bg_list,bg)
+				
+				//update most points per shot
+				if bg.final_score > most_points_per_shot then
+					most_points_per_shot=bg.final_score
+				end
+				
+				//update most kills per shot
+				if bg.kills > most_kills_per_shot then
+					most_kills_per_shot=bg.kills
+				end
+				
+				//update lifetime zombie kills
+				lifetime_zombie_kills+=bg.kills
 			end
 		else
 			//bg is moving
@@ -2493,6 +2535,7 @@ function init_menus()
 	add(records,"most points per shot")
 	add(records,"lifetime zombie kills")
 	add(records,"back")
+	records_text=""
 	
 	//credits menu
 	credits={}
@@ -2587,14 +2630,76 @@ end
 
 function select_records(cur)
 
-	//reset the cursor position
-	return 1
+	// high score
+	if cur==1 then
+		records_text="high score: "..dget(0)
+		
+	//furthest wave
+	elseif cur==2 then
+		records_text="furthest wave: "..dget(1)
+		
+	//most kills per shot
+	elseif cur==3 then
+		records_text="most kills per shot: "..dget(2)
+	
+	//most points per shot
+	elseif cur==4 then
+		records_text="most points per shot: "..dget(3)
+		
+	//lifetime zombie kills
+	elseif cur==5 then
+		records_text="lifetime zombie kills: "..dget(4)
+	
+	//back
+	elseif cur==6 then
+		menu_state="main"
+		options=main
+	
+		//reset the cursor position
+		return 1
+		
+	end
+
+	return cur
 end
 
 function select_credits(cur)
 
-	//reset the cursor position
-	return 1
+	//director
+	if cur==1 then
+		//code goes here
+		
+	//game design
+	elseif cur==2 then
+		//code goes here
+		
+	//programming
+	elseif cur==3 then
+		//code goes here
+		
+	//sfx design
+	elseif cur==4 then
+		//code goes here
+		
+	//sprites and art
+	elseif cur==5 then
+		//code goes here
+		
+	//music
+	elseif cur==6 then
+		//code goes here
+		
+	//back
+	elseif cur==7 then
+		menu_state="main"
+		options=main
+		
+		//reset the cursor position
+		return 1
+		
+	end
+
+	return cur
 end
 
 function draw_menu()
@@ -2610,29 +2715,38 @@ function draw_menu()
 	spr(172,(20-16)*8,(6+cur-1)*8)
 	
 	double_print("version 0.3.1",(22-16)*8,4*8+1)
+	
+	if menu_state=="records" then
+		double_print(records_text,8,6*8+(#options+3)*8-3)
+	end
 end
 -->8
 --tab 14: records
 
 function init_records()
 	//high score
+	high_score=dget(0)
 	
 	//furthest wave
+	furthest_wave=dget(1)
 	
 	//most kills per shot
+	most_kills_per_shot=dget(2)
 	
 	//most points per shot
+	most_points_per_shot=dget(3)
 	
 	//lifetime zombie kills
+	lifetime_zombie_kills=dget(4)
 	
 end
 
 function update_highscore()
-	dset(0,player.score)
+	//dset(0,player.score)
 end
 
 function update_furthestwave()
-	dset(1,wave)
+	//dset(1,wave)
 end
 
 function update_killspershot()
@@ -2644,8 +2758,8 @@ function update_pointspershot()
 end
 
 function update_zombiekills()
-	local prev=dget(4)
-	dset(4,prev+zombies_killed)
+	//local prev=dget(4)
+	//dset(4,prev+zombies_killed)
 end
 __gfx__
 00000000005555000055550000555500005555000055550000555500005555000055550000555500333333333333333300000000000000000000000000000000
