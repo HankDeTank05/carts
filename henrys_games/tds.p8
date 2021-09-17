@@ -65,28 +65,30 @@ function update60_game()
 	if not game_over then
 		update_player()
 	else
-		//update records here
-		
-		//update high score
-		if player.score > high_score then
-			high_score=player.score
-			dset(0, high_score)
+		//don't update records if
+		//mouse mode is enabled
+		if not(enable_mouse) then
+			//update high score
+			if player.score > high_score then
+				high_score=player.score
+				dset(0, high_score)
+			end
+			
+			//update furthest wave
+			if wave > furthest_wave then
+				furthest_wave=wave
+				dset(1, furthest_wave)
+			end
+			
+			//update most kills per shot
+			dset(2, most_kills_per_shot)
+			
+			//update most points per shot
+			dset(3, most_points_per_shot)
+			
+			//update lifetime zombie kills
+			dset(4, lifetime_zombie_kills)
 		end
-		
-		//update furthest wave
-		if wave > furthest_wave then
-			furthest_wave=wave
-			dset(1, furthest_wave)
-		end
-		
-		//update most kills per shot
-		dset(2, most_kills_per_shot)
-		
-		//update most points per shot
-		dset(3, most_points_per_shot)
-		
-		//update lifetime zombie kills
-		dset(4, lifetime_zombie_kills)
 	end
 	
 	update_bulletlist()
@@ -133,11 +135,13 @@ function draw_game()
 		draw_mouse()
 	end
 	
-	print("high score: "..high_score)
-	print("furthest wave: "..furthest_wave)
-	print("most kills per shot: "..most_kills_per_shot)
-	print("most points per shot: "..most_points_per_shot)
-	print("lifetime zombie kills: "..lifetime_zombie_kills)
+	//print("high score: "..high_score)
+	//print("furthest wave: "..furthest_wave)
+	//print("most kills per shot: "..most_kills_per_shot)
+	//print("most points per shot: "..most_points_per_shot)
+	//print("lifetime zombie kills: "..lifetime_zombie_kills)
+	
+	//print("spawn frequency: "..spawn_frequency)
 end
 
 function draw_dirt_ui_box(x,y,w,h)
@@ -1393,30 +1397,29 @@ end
 -->8
 --tab 4: zombie
 
-base_spawn_freq=30
-spawn_frequency=base_spawn_freq //num frames
-spawn_countdown=spawn_frequency
-zombies_spawned=0
-zombies_killed=0
-
-max_zombies_this_wave=0
-zombies_this_wave=0
-
-ai_refresh_rate=30
-level_up_rate=3
-pickup_rarity=30
-horde_threshold=300
-
-blood_particles=10
-
-blood_vel=1.2
-blood_half_vel=blood_vel/2
-
-spawn_val_range=4
-
-rotation_threshold=5
-
 function init_zombielist()
+	base_spawn_freq=30
+	spawn_frequency=base_spawn_freq //num frames
+	spawn_countdown=spawn_frequency
+	zombies_spawned=0
+	zombies_killed=0
+	
+	max_zombies_this_wave=0
+	zombies_this_wave=0
+	
+	ai_refresh_rate=30
+	level_up_rate=3
+	pickup_rarity=30
+	horde_threshold=300
+	
+	blood_particles=10
+	
+	blood_vel=1.2
+	blood_half_vel=blood_vel/2
+	
+	spawn_val_range=4
+	
+	rotation_threshold=5
 	zombielist={}
 end
 
