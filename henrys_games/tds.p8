@@ -1,4 +1,4 @@
-pico-8 cartridge // http://www.pico-8.com
+pico-8 cartridge -- http:--www.pico-8.com
 version 32
 __lua__
 --garden defender
@@ -58,7 +58,7 @@ function init_game()
 	add_main_menu_opt()
 	game_over=false
 	pickup_rarity=30
-	//seed the rng
+	--seed the rng
 	srand(time())
 	if enable_mouse then
 		init_m_k()
@@ -73,7 +73,7 @@ function init_game()
 	init_waves()
 	wave_display=true
 	current_time=time()
-	//printh("\n--------\nnew game\n--------\n")
+	--printh("\n--------\nnew game\n--------\n")
 	spawn_zombies()
 end
 
@@ -90,28 +90,28 @@ function update60_game()
 	if not game_over then
 		update_player()
 	else
-		//don't update records if
-		//mouse mode is enabled
+		--don't update records if
+		--mouse mode is enabled
 		if not(enable_mouse) then
-			//update high score
+			--update high score
 			if player.score > high_score then
 				high_score=player.score
 				dset(0, high_score)
 			end
 			
-			//update furthest wave
+			--update furthest wave
 			if wave > furthest_wave then
 				furthest_wave=wave
 				dset(1, furthest_wave)
 			end
 			
-			//update most kills per shot
+			--update most kills per shot
 			dset(2, most_kills_per_shot)
 			
-			//update most points per shot
+			--update most points per shot
 			dset(3, most_points_per_shot)
 			
-			//update lifetime zombie kills
+			--update lifetime zombie kills
 			dset(4, lifetime_zombie_kills)
 		end
 	end
@@ -154,19 +154,19 @@ function draw_game()
 		print(current_time-prev_time,0,0,7)
 	end
 	--]]
-	//print("cpu: "..flr((stat(1)*100)).."%",0,0,7)
+	--print("cpu: "..flr((stat(1)*100)).."%",0,0,7)
 	
 	if enable_mouse then
 		draw_mouse()
 	end
 	
-	//print("high score: "..high_score)
-	//print("furthest wave: "..furthest_wave)
-	//print("most kills per shot: "..most_kills_per_shot)
-	//print("most points per shot: "..most_points_per_shot)
-	//print("lifetime zombie kills: "..lifetime_zombie_kills)
+	--print("high score: "..high_score)
+	--print("furthest wave: "..furthest_wave)
+	--print("most kills per shot: "..most_kills_per_shot)
+	--print("most points per shot: "..most_points_per_shot)
+	--print("lifetime zombie kills: "..lifetime_zombie_kills)
 	
-	//print("spawn frequency: "..spawn_frequency)
+	--print("spawn frequency: "..spawn_frequency)
 end
 
 function draw_dirt_ui_box(x,y,w,h)
@@ -175,16 +175,16 @@ function draw_dirt_ui_box(x,y,w,h)
 	local dirt_bl=165
 	local dirt_br=170
 	
-	//top left
+	--top left
 	spr(dirt_tl, x,     y    )
-	//top right
+	--top right
 	spr(dirt_tr, x+w-8, y    )
-	//bottom left
+	--bottom left
 	spr(dirt_bl, x,     y+h-8)
-	//bottom right
+	--bottom right
 	spr(dirt_br, x+w-8, y+h-8)
 	
-	//left edge
+	--left edge
 	for yl=y+8,y+h-16,8 do
 		if yl%2==0 then
 			spr(148,x,yl)
@@ -192,7 +192,7 @@ function draw_dirt_ui_box(x,y,w,h)
 			spr(164,x,yl)
 		end
 	end
-	//right edge
+	--right edge
 	for yr=y+8,y+h-16,8 do
 		if yr%2==0  then
 			spr(155,x+w-8,yr)
@@ -200,7 +200,7 @@ function draw_dirt_ui_box(x,y,w,h)
 			spr(171,x+w-8,yr)
 		end
 	end
-	//top edge
+	--top edge
 	local top_edge_range={150,153}
 	local top_edge_spr=150
 	for xt=x+8,x+w-16,8 do
@@ -210,7 +210,7 @@ function draw_dirt_ui_box(x,y,w,h)
 			top_edge_spr=top_edge_range[1]
 		end
 	end
-	//bottom edge
+	--bottom edge
 	local btm_edge_range={166,169}
 	local btm_edge_spr=166
 	for xb=x+8,x+w-16,8 do
@@ -220,7 +220,7 @@ function draw_dirt_ui_box(x,y,w,h)
 			btm_edge_spr=btm_edge_range[1]
 		end
 	end
-	//infill
+	--infill
 	local infill_range={182,185}
 	local infill_spr=182
 	for xi=x+8,x+w-16,8 do
@@ -236,11 +236,11 @@ end
 
 function show_game_over()	
 	draw_dirt_ui_box(40,40,6*8,4*8)
-	//text
+	--text
 	sspr(0,10*8,4*8,2*8,48,48)
 end
 
-//diagonal functions
+--diagonal functions
 function atan(x1, y1, x2, y2)
 	--finds the angle between x & y
 	local x = x2-x1
@@ -268,7 +268,7 @@ function normalize(x,y)
 	return cos(rad),sin(rad)
 end
 
-//misc functions
+--misc functions
 function contains(table,value)
 	includes=false
 	--[[
@@ -280,7 +280,7 @@ function contains(table,value)
 	end
 	--]]
 
-	//binary search
+	--binary search
 	
 	--local runs=0
 	
@@ -299,16 +299,16 @@ function contains(table,value)
 		--assert(table[m]!=nil,"table[m]==nil, m="..m)
 		--assert(value!=nil,"value==nil")
 		
-		//check if value is present at mid
+		--check if value is present at mid
 		if table[m]==value then
 			includes=true
 			break
 		end
 		
-		//if value is greater, ignore left half
+		--if value is greater, ignore left half
 		if table[m]<value then
 			l=m+1
-		//if value is smaller, ignore right half
+		--if value is smaller, ignore right half
 		else
 			r=m-1
 		end
@@ -350,7 +350,7 @@ function printh_table(table)
 end
 
 
-//debug functions
+--debug functions
 --[[
 function debug_pickup_generation()
 	for p in all(pickuplist)do
@@ -609,15 +609,15 @@ function update_player()
 		player.kb_pos+=player.kb_speed
 	else
 	
-		//player.dirx=0
-		//player.diry=0
+		--player.dirx=0
+		--player.diry=0
 	
 		local kb=stat(31)
 		if (btn(⬅️)) or (enable_mouse and btn()&0x0100==0x0100) then
-			//left
+			--left
 			if not(enable_mouse) then
-				//if the mouse is enabled
-				//then set dirx by mouse
+				--if the mouse is enabled
+				--then set dirx by mouse
 				player.dirx=-1
 			end
 			
@@ -627,10 +627,10 @@ function update_player()
 				player.deltax=0
 			end
 		elseif (btn(➡️)) or (enable_mouse and btn()&0x0200==0x0200) then
-			//right
+			--right
 			if not(enable_mouse) then
-				//if the mouse is enabled
-				//then set dirx by mouse
+				--if the mouse is enabled
+				--then set dirx by mouse
 				player.dirx=1
 			end
 			
@@ -641,18 +641,18 @@ function update_player()
 			end
 		else
 			if not(enable_mouse) then
-				//if the mouse is enabled
-				//then set dirx by mouse
+				--if the mouse is enabled
+				--then set dirx by mouse
 				player.dirx=0
 			end
 			player.deltax=0
 		end
 		
 		if btn(⬆️) or (enable_mouse and btn()&0x0400==0x0400) then
-			//up
+			--up
 			if not(enable_mouse) then
-				//if the mouse is enabled
-				//then set diry by mouse
+				--if the mouse is enabled
+				--then set diry by mouse
 				player.diry=-1
 			end
 			
@@ -662,10 +662,10 @@ function update_player()
 				player.deltay=0
 			end
 		elseif btn(⬇️) or (enable_mouse and btn()&0x0800==0x0800) then
-			//down
+			--down
 			if not(enable_mouse) then
-				//if the mouse is enabled
-				//then set diry by mouse
+				--if the mouse is enabled
+				--then set diry by mouse
 				player.diry=1
 			end
 			
@@ -676,8 +676,8 @@ function update_player()
 			end
 		else
 			if not(enable_mouse) then
-				//if the mouse is enabled
-				//then set diry by mouse
+				--if the mouse is enabled
+				--then set diry by mouse
 				player.diry=0
 			end
 			player.deltay=0
@@ -782,55 +782,55 @@ function update_player()
 		elseif mouse.m2 and player.ammo!=player.ammocap then
 			reload_ammo()
 		
-		else	//rotate player
+		else	--rotate player
 			local rad=atan2(mouse.x,mouse.y)
-			//player.dirx=cos(rad)
-			//player.diry=sin(rad)
-			//printh("rotation rad="..rad)
+			--player.dirx=cos(rad)
+			--player.diry=sin(rad)
+			--printh("rotation rad="..rad)
 			
 			player.fdirx,player.fdiry=lookat(mouse.x,mouse.y,player.x,player.y)
 			player.dirx=player.fdirx
 			player.diry=player.fdiry			
-			//printh("dirx="..player.fdirx)
-			//printh("diry="..player.fdiry)
-			//printh("\n")
+			--printh("dirx="..player.fdirx)
+			--printh("diry="..player.fdiry)
+			--printh("\n")
 			
 			if player.dirx<-player.rotation_threshold then
-				//right
+				--right
 				if player.diry<-player.rotation_threshold then
-					//down
+					--down
 					player.dir=3
 				elseif -player.rotation_threshold<=player.diry and player.diry<player.rotation_threshold then
-					//center
+					--center
 					player.dir=6
 				elseif player.rotation_threshold<=player.diry then
-					//up
+					--up
 					player.dir=9
 				end
 				
 			elseif -player.rotation_threshold<=player.dirx and player.dirx<player.rotation_threshold then
-				//mid
+				--mid
 				if player.diry<-player.rotation_threshold then
-					//down
+					--down
 					player.dir=2
 				elseif -player.rotation_threshold<=player.diry and player.diry<player.rotation_threshold then
-					//center
+					--center
 					player.dir=5
 				elseif player.rotation_threshold<=player.diry then
-					//up
+					--up
 					player.dir=8
 				end
 				
 			elseif player.rotation_threshold<=player.dirx then
-				//left
+				--left
 				if player.diry<-player.rotation_threshold then
-					//down
+					--down
 					player.dir=1
 				elseif -player.rotation_threshold<=player.diry and player.diry<player.rotation_threshold then
-					//center
+					--center
 					player.dir=4
 				elseif player.rotation_threshold<=player.diry then
-					//up
+					--up
 					player.dir=7
 				end
 				
@@ -873,15 +873,15 @@ function fire()
 				bltdx*=-1
 				bltdy*=-1
 			end
-			//printh("bltdx="..bltdx)
-			//printh("bltdy="..bltdy)
-			//printh("player.x="..player.x)
+			--printh("bltdx="..bltdx)
+			--printh("bltdy="..bltdy)
+			--printh("player.x="..player.x)
 			create_bullet(shots_fired,player.pellet_penetration,player.x,player.y,bltdx,bltdy)
-			//printh("bltgrp["..i.."]="..bltgrp[i+1].x)
+			--printh("bltgrp["..i.."]="..bltgrp[i+1].x)
 		end
 		
-		//add(bulletlist,bltgrp)
-		//printh("#bulletlist="..#bulletlist)
+		--add(bulletlist,bltgrp)
+		--printh("#bulletlist="..#bulletlist)
 		
 		fire_particles()
 		
@@ -902,7 +902,7 @@ function fire()
 
 		--create right bullet
 		create_bullet("r",player.x,player.y,rightdx,rightdy)
-]]
+		]]
 	elseif(not(player.reloading) and player.ammo==0)then
 		sfx(2)
 	end
@@ -986,25 +986,25 @@ function get_pickup(ptype)
 		end
 		
 	elseif(ptype=="spread")then
-		//increase shot spread width by 0.015625 radians if not maxed out
+		--increase shot spread width by 0.015625 radians if not maxed out
 		if(player.shot_spread<player.max_spread)then
 			player.shot_spread+=player.shot_incr_step
 		end
-		//add a mid-field spawn
+		--add a mid-field spawn
 		add_field_spawn()
 	
 	elseif(ptype=="pellet")then
-		//increase pellets per shot by 1 if not maxed out
+		--increase pellets per shot by 1 if not maxed out
 		if(player.num_pellets<player.max_pellets)then
 			player.num_pellets+=1
 		end
 	
 	elseif(ptype=="penetration")then
-		//increase pellet penetration by 1 if not maxed out
+		--increase pellet penetration by 1 if not maxed out
 		if(player.pellet_penetration<player.max_penetration)then
 			player.pellet_penetration+=1
 		end
-		//increase zombie spawn frequency
+		--increase zombie spawn frequency
 		spawn_frequency=base_spawn_freq-(player.pellet_penetration*2.9)
 
 	end
@@ -1113,7 +1113,7 @@ function update_bulletlist()
 			if bg.id==b.bg_id then
 				for z_id in all(b.z_ids) do
 					if not(contains(bg.z_ids,z_id)) then
-						//printh("bullet group #"..bg.id.." does not contain zombie id #"..z_id)
+						--printh("bullet group #"..bg.id.." does not contain zombie id #"..z_id)
 						insert_sorted_ltoh(bg.z_ids,z_id)
 					end
 				end
@@ -1134,7 +1134,7 @@ function draw_bullets()
 end
 
 function delete_bullet(b)
-	//printh("deleting bullet")
+	--printh("deleting bullet")
 	printh_table(b.z_ids)
 	
 	for bg in all(bg_list) do
@@ -1144,7 +1144,7 @@ function delete_bullet(b)
 			end
 			for z_id in all(b.z_ids) do
 				if not(contains(bg.z_ids,z_id)) then
-					//printh("bullet group #"..bg.id.." does not contain zombie id #"..z_id)
+					--printh("bullet group #"..bg.id.." does not contain zombie id #"..z_id)
 					insert_sorted_ltoh(bg.z_ids,z_id)
 				end
 			end
@@ -1161,42 +1161,42 @@ function bullet_fence_particles(b)
 		local vel=rnd(0.5)
 		local altvel=rnd(1)
 		if(b.x<8)then
-			//vertical particles (left)
+			--vertical particles (left)
 			if(i%2==0)then
-				//particle up
+				--particle up
 				add_p_vel(b.leftx,b.upy,altvel,-vel,"wall",layer)
 			else
-				//particle down
+				--particle down
 				add_p_vel(b.leftx,b.upy,altvel,vel,"wall",layer)
 			end
 		
 		elseif(b.x>110)then
-			//vertical particles (right)
+			--vertical particles (right)
 			if(i%2==0)then
-				//particle up
+				--particle up
 				add_p_vel(b.rightx,b.upy,-altvel,-vel,"wall",layer)
 			else
-				//particle down
+				--particle down
 				add_p_vel(b.rightx,b.upy,-altvel,vel,"wall",layer)
 			end
 			
 		elseif(b.y<8)then
-			//horizontal particles (up)
+			--horizontal particles (up)
 			if(i%2==0)then
-				//left particles
+				--left particles
 				add_p_vel(b.leftx,b.upy,-vel,altvel,"wall",layer)
 			else
-				//right particles
+				--right particles
 				add_p_vel(b.leftx,b.upy,vel,altvel,"wall",layer)
 			end		
 			
 		elseif(b.y>97)then
-			//horizontal particles (down)
+			--horizontal particles (down)
 			if(i%2==0)then
-				//left particles
+				--left particles
 				add_p_vel(b.leftx,b.downy,-vel,-altvel,"wall",layer)
 			else
-				//right particles
+				--right particles
 				add_p_vel(b.leftx,b.downy,vel,-altvel,"wall",layer)
 			end
 		end
@@ -1331,8 +1331,8 @@ end
 
 function draw_score_box()
 	draw_hud_box(105,112,126,126)
-	//print(zombies_killed,108,117,5)
-	//print(zombies_killed,109,117,6)
+	--print(zombies_killed,108,117,5)
+	--print(zombies_killed,109,117,6)
 	print(player.score,108,117,5)
 	print(player.score,109,117,6)
 end
@@ -1346,20 +1346,20 @@ end
 function draw_upgrades_box()
 	draw_hud_box(47,112,103,126)
 	
-	//penetration
+	--penetration
 	draw_penet_upgrade()
 	
-	//pellets
+	--pellets
 	draw_pellet_upgrade()
 	
-	//spread
+	--spread
 	draw_spread_upgrade()
 	
 end
 
 function update_penet_upgrade()
 	for i=1,5 do
-		//update sprites
+		--update sprites
 		if(player.pellet_penetration<1+(i*2-2))then
 			penet_spr_index[i]=193
 		elseif(player.pellet_penetration==1+(i*2-2))then
@@ -1374,14 +1374,14 @@ end
 
 function draw_penet_upgrade()
 	for i=1,5 do
-		//draw sprites
+		--draw sprites
 		spr(penet_spr_index[i],49+(i*8-8),110)
 	end
 end
 
 function update_pellet_upgrade()
 	for i=1,5 do
-		//update sprites
+		--update sprites
 		if(player.num_pellets<1+(i*2-2))then
 			pellet_spr_index[i]=209
 		elseif(player.num_pellets==1+(i*2-2))then
@@ -1394,7 +1394,7 @@ end
 
 function draw_pellet_upgrade()
 	for i=1,5 do
-		//draw sprites
+		--draw sprites
 		spr(pellet_spr_index[i],49+(i*8-8),114)
 	end
 end
@@ -1406,16 +1406,16 @@ end
 function draw_spread_upgrade()
 	line(spread_line_mid_x-(max_line_len/2),spread_line_y,spread_line_mid_x+(max_line_len/2),spread_line_y,13)
 
-	//adjusted line length
+	--adjusted line length
 	local adj_len=flr(line_len/2)
 	local left_x=spread_line_mid_x-adj_len
 	local right_x=spread_line_mid_x+adj_len
 	
-	//left edge line
+	--left edge line
 	line(left_x,spread_line_y-1,left_x,spread_line_y+1,7)
-	//width line
+	--width line
 	line(spread_line_mid_x-adj_len,spread_line_y,spread_line_mid_x+adj_len,spread_line_y,7)
-	//right edge line
+	--right edge line
 	line(right_x,spread_line_y-1,right_x,spread_line_y+1,7)
 end
 
@@ -1424,7 +1424,7 @@ end
 
 function init_zombielist()
 	base_spawn_freq=30
-	spawn_frequency=base_spawn_freq //num frames
+	spawn_frequency=base_spawn_freq --num frames
 	spawn_countdown=spawn_frequency
 	zombies_spawned=0
 	zombies_killed=0
@@ -1464,12 +1464,12 @@ function create_zombie()
 	zombie.dir=5
 	
 	if edge==4 then
-		//mid-field spawn
+		--mid-field spawn
 		--local tmpx,tmpy		
 		local s_index=flr(rnd(#field_spawns)+1)
 		local spwnr=field_spawns[s_index]
-		//printh("field spawns="..#field_spawns)
-		//printh("s_index="..s_index)
+		--printh("field spawns="..#field_spawns)
+		--printh("s_index="..s_index)
 		if not(all_spawns_busy()) then
 			while #field_spawns>1 and spwnr.incoming do
 				printh("spawner is busy, finding a new one")
@@ -1486,19 +1486,19 @@ function create_zombie()
 	end
 	
 	if edge==0 then
-		//left
+		--left
 		zombie.x=-8
 		zombie.y=coord
 	elseif edge==1 then
-		//right
+		--right
 		zombie.x=128
 		zombie.y=coord
 	elseif edge==2 then
-		//up
+		--up
 		zombie.x=coord
 		zombie.y=-8
 	elseif edge==3 then
-		//down
+		--down
 		zombie.x=coord
 		zombie.y=110
 	end
@@ -1544,7 +1544,7 @@ function create_zombie()
 end
 
 function update_zombielist()
-	//max_zombies_this_wave=wave
+	--max_zombies_this_wave=wave
 	
 	for z in all(zombielist) do
 
@@ -1561,10 +1561,10 @@ function update_zombielist()
 				drop_random_pickup(z.x,z.y)
 				zombies_killed+=1
 				wave_kills+=1
-				//if(zombies_killed%level_up_rate==0)then
-					//level_up_rate+=1
-					//spawn_frequency-=1
-				//end
+				--if(zombies_killed%level_up_rate==0)then
+					--level_up_rate+=1
+					--spawn_frequency-=1
+				--end
 			end
 		else
 			--update zombie sprite edges
@@ -1643,7 +1643,7 @@ function draw_zombies()
 		else
 			spr(z.dir+64,z.x,z.y)
 		end
-		//print(z.id,z.x,z.y,7)
+		--print(z.id,z.x,z.y,7)
 	end
 end
 
@@ -1743,12 +1743,12 @@ function check_bullet_collisions()
 	--check zombie collisions
 	
 	for b in all(bulletlist) do
-		//check for pellet wall collisions		
+		--check for pellet wall collisions		
 		if fget(mget(flr(b.leftx/8),flr(b.downy/8)),5) then
-			//play sound for pellet hitting wall
-			//sfx(???)
+			--play sound for pellet hitting wall
+			--sfx(???)
 			bullet_fence_particles(b)
-			//del(bulletlist,b)
+			--del(bulletlist,b)
 			delete_bullet(b)
 		end
 		
@@ -1763,11 +1763,11 @@ function check_bullet_collisions()
 				
 				if((bleftcol or brightcol) and (bupcol or bdowncol)) then
 					assert(z.id!=nil,"nil zombie id")
-					//add(b.z_ids,z.id)
+					--add(b.z_ids,z.id)
 					insert_sorted_ltoh(b.z_ids,z.id)
 					b.penetration-=1
 					if(b.penetration<0)then
-						//del(bulletlist,b)
+						--del(bulletlist,b)
 						delete_bullet(b)
 						blood_particles_hit(b,z)
 					else
@@ -2043,7 +2043,7 @@ function update_wave()
 		wave+=1
 		wave_display=true
 		zombies_this_wave=0
-		//max zombies this wave = the larger of the two: [the wave number] or (round up)[wave number * num pellets * 0.25]
+		--max zombies this wave = the larger of the two: [the wave number] or (round up)[wave number * num pellets * 0.25]
 		max_zombies_this_wave=max(wave,ceil(wave*(player.num_pellets*0.25)))
 		if wave>ceil(wave*(player.num_pellets*0.1)) then
 			printh("wave greater")
@@ -2056,35 +2056,35 @@ end
 function wave_n()
 	local num_spr=132
 
-	//draw wave n		
-	//draw_dirt_ui_box(40,36,6*8,5*8)
+	--draw wave n		
+	--draw_dirt_ui_box(40,36,6*8,5*8)
 	draw_dirt_ui_box(40,36,48,40)
 	
-	//draw wave text
-	//"w"            "a"            "v"            "e"
+	--draw wave text
+	--"w"            "a"            "v"            "e"
 	spr(128,48,44) spr(129,56,44) spr(130,64,44) spr(131,72,44)
 	
-	//draw wave timer bar
+	--draw wave timer bar
 	sspr(0,9*8,4*8,8,48,52)
 	rectfill(50,54,(wave_screentimer/wave_screentime)*28+50,57,12)
 	
-	//draw wave number
+	--draw wave number
 	if(wave<10)then
-		//draw single-digit wave number
+		--draw single-digit wave number
 		spr(wave+num_spr,60,60)
 	elseif(wave<100)then
-		//draw double-digit wave numebr
-		//draw 10s place
+		--draw double-digit wave numebr
+		--draw 10s place
 		spr(flr(wave/10)+num_spr,56,60)
-		//draw 1s place
+		--draw 1s place
 		spr((wave%10)+num_spr,64,60)
 	else
-		//draw triple-digit wave number
-		//draw 100s place
+		--draw triple-digit wave number
+		--draw 100s place
 	 spr(flr(wave/100)+num_spr,52,60)
-		//draw 10s place
+		--draw 10s place
 		spr(flr((wave-100)/10)+num_spr,60,60)
-		//draw 1s place
+		--draw 1s place
 		spr((wave%10)+num_spr,68,60)
 	end
 	wave_screentimer-=1
@@ -2096,17 +2096,17 @@ end
 -->8
 --tab 8: particles
 
-ps_btm={} //particles (bottom)
-ps_top={} //particles (top)
+ps_btm={} --particles (bottom)
+ps_top={} --particles (top)
 
-g=0.0 //particle gravity
+g=0.0 --particle gravity
 max_vel=2 
-min_time=2 //min/max time btwn particles
+min_time=2 --min/max time btwn particles
 max_time=5
-min_life=90 //particle lifetime
+min_life=90 --particle lifetime
 max_life=120
-t=0 //ticker
-cols={1,1,1,13,13,12,12,7}	//colors
+t=0 --ticker
+cols={1,1,1,13,13,12,12,7}	--colors
 
 
 shot_min_life=1
@@ -2130,11 +2130,11 @@ end
 function update_particles()
 	t+=1
 	if(t==next_p)then
-		//add_p(64,64)
+		--add_p(64,64)
 		next_p=randrange(min_time,max_time)
 		t=0
 	end
-	//burst
+	--burst
 	--[[
 	if(btn(🅾️))then
 		for i=1,burst do
@@ -2163,7 +2163,7 @@ function randrangefloat(low,high)
 end
 
 function add_p(x,y)
-	//add particle with rnd velocity
+	--add particle with rnd velocity
 	local p={}
 	
 	p.x=x
@@ -2181,7 +2181,7 @@ function add_p(x,y)
 end
 
 function add_p_vel(x,y,vx,vy,tag,layer)
-	//add particle with given velocity
+	--add particle with given velocity
 	local p={}
 	
 	p.x=x
@@ -2223,23 +2223,23 @@ end
 function update_p(p)
 	if(p.life<=0)then
 		if(p.layer=="top")then
-			del(ps_top,p) //kill old particles
+			del(ps_top,p) --kill old particles
 		elseif(p.layer=="btm" or p.layer=="bottom")then
 			del(ps_btm,p)
 		end
 	else
 		
 		--[[
-		p.dy+=g //add gravity
+		p.dy+=g --add gravity
 		if((p.y+p.dy)>127)then
 			p.dy*=-0.8
 		end
 		--]]
 		
-		p.x+=p.dx //update position
+		p.x+=p.dx --update position
 		p.y+=p.dy
 		
-		p.life-=1 //die a little
+		p.life-=1 --die a little
 	end
 end
 
@@ -2365,28 +2365,28 @@ function update_bglist()
 			bg.score=bg.kills
 			
 			if bg.live_count==0 then
-				//printh("bg.z_ids")
-				//for z_id in all(bg.z_ids) do
-					//printh("\t"..z_id)
-				//end
+				--printh("bg.z_ids")
+				--for z_id in all(bg.z_ids) do
+					--printh("\t"..z_id)
+				--end
 				bg.moving=true
-				//del(bg_list,bg)
+				--del(bg_list,bg)
 				
-				//update most points per shot
+				--update most points per shot
 				if bg.final_score > most_points_per_shot then
 					most_points_per_shot=bg.final_score
 				end
 				
-				//update most kills per shot
+				--update most kills per shot
 				if bg.kills > most_kills_per_shot then
 					most_kills_per_shot=bg.kills
 				end
 				
-				//update lifetime zombie kills
+				--update lifetime zombie kills
 				lifetime_zombie_kills+=bg.kills
 			end
 		else
-			//bg is moving
+			--bg is moving
 			if bg.score==bg.final_score then
 				bg.x+=bg.dx*bg.speed
 				bg.y+=bg.dy*bg.speed
@@ -2400,7 +2400,7 @@ function update_bglist()
 			end
 		end
 	end
-	//printh("bg count = "..#bg_list)
+	--printh("bg count = "..#bg_list)
 end
 
 function draw_bglist()
@@ -2458,7 +2458,7 @@ function init_m_k()
 	
 	poke(0x5f2d,flags)
 	
-	//mouse
+	--mouse
 	mouse={}
 	
 	mouse.x=64
@@ -2472,7 +2472,7 @@ function init_m_k()
 	mouse.m2=false
 	mouse.m2_wait_for_release=false
 	
-	//keyboard
+	--keyboard
 	keyboard={}
 	keyboard.w=false
 	keyboard.a=false
@@ -2517,14 +2517,14 @@ function update_m_k()
 		mouse.m2_wait_for_release=false
 	end
 	
-	//keyboard.w=(stat(30) and stat(31)=="w")
-	//printh("w="..keyboard.w)
-	//keyboard.a=(stat(30) and stat(31)=="a")
-	//printh("a="..keyboard.a)
-	//keyboard.s=(stat(30) and stat(31)=="s")
-	//printh("s="..keyboard.s)
-	//keyboard.d=(stat(30) and stat(31)=="d")
-	//printh("d="..keyboard.d)
+	--keyboard.w=(stat(30) and stat(31)=="w")
+	--printh("w="..keyboard.w)
+	--keyboard.a=(stat(30) and stat(31)=="a")
+	--printh("a="..keyboard.a)
+	--keyboard.s=(stat(30) and stat(31)=="s")
+	--printh("s="..keyboard.s)
+	--keyboard.d=(stat(30) and stat(31)=="d")
+	--printh("d="..keyboard.d)
 end
 
 function draw_mouse()
@@ -2539,7 +2539,7 @@ end
 
 function init_menus()
 
-	//main menu
+	--main menu
 	main={}
 	add(main,"play game")
 	add(main,"settings")
@@ -2549,7 +2549,7 @@ function init_menus()
 	subtext=""
 	show_subtext=false
 	
-	//settings menu
+	--settings menu
 	settings={}
 	if enable_mouse then
 		add(settings,"disable mouse")
@@ -2558,7 +2558,7 @@ function init_menus()
 	end
 	add(settings,"back")
 	
-	//records menu
+	--records menu
 	records={}
 	add(records,"high score")
 	add(records,"furthest wave")
@@ -2567,7 +2567,7 @@ function init_menus()
 	add(records,"lifetime zombie kills")
 	add(records,"back")
 	
-	//credits menu
+	--credits menu
 	credits={}
 	add(credits,"director")
 	add(credits,"game design")
@@ -2614,7 +2614,7 @@ end
 
 function select_main(cur)
 	if cur==1 then
-		//play game
+		--play game
 		_init=init_game
 		_update60=update60_game
 		_draw=draw_game
@@ -2622,29 +2622,29 @@ function select_main(cur)
 		_init()
 		
 	elseif cur==2 then
-		//settings
+		--settings
 		menu_state="settings"
 		options=settings
 		
 	elseif cur==3 then
-		//records
+		--records
 		menu_state="records"
 		options=records
 	
 	elseif cur==4 then
-		//credits
+		--credits
 		menu_state="credits"
 		options=credits
 		
 	end
 	
-	//reset the cursor position
+	--reset the cursor position
 	return 1
 end
 
 function select_settings(cur)
 	if cur==1 then
-		//enable mouse
+		--enable mouse
 		enable_mouse=not enable_mouse
 		if enable_mouse then
 			settings[1]="disable mouse"
@@ -2653,13 +2653,13 @@ function select_settings(cur)
 		end
 
 	elseif cur==2 then
-		//back
+		--back
 		menu_state="main"
 		options=main
 		
 	end
 	
-	//reset the cursor position
+	--reset the cursor position
 	return 1
 end
 
@@ -2669,33 +2669,33 @@ function select_records(cur)
 		show_subtext=true
 	end
 
-	// high score
+	-- high score
 	if cur==1 then
 		subtext="high score: "..dget(0)
 		
-	//furthest wave
+	--furthest wave
 	elseif cur==2 then
 		subtext="furthest wave: "..dget(1)
 		
-	//most kills per shot
+	--most kills per shot
 	elseif cur==3 then
 		subtext="most kills per shot: "..dget(2)
 	
-	//most points per shot
+	--most points per shot
 	elseif cur==4 then
 		subtext="most points per shot: "..dget(3)
 		
-	//lifetime zombie kills
+	--lifetime zombie kills
 	elseif cur==5 then
 		subtext="lifetime zombie kills: "..dget(4)
 	
-	//back
+	--back
 	elseif cur==6 then
 		show_subtext=false
 		menu_state="main"
 		options=main
 	
-		//reset the cursor position
+		--reset the cursor position
 		return 1
 		
 	end
@@ -2709,37 +2709,37 @@ function select_credits(cur)
 		show_subtext=true
 	end
 
-	//director
+	--director
 	if cur==1 then
 		subtext=director
 		
-	//game design
+	--game design
 	elseif cur==2 then
 		subtext=game_design
 		
-	//programming
+	--programming
 	elseif cur==3 then
 		subtext=programming
 		
-	//sfx design
+	--sfx design
 	elseif cur==4 then
 		subtext=sfx_design
 		
-	//sprites and art
+	--sprites and art
 	elseif cur==5 then
 		subtext=sprites_and_art
 		
-	//composer
+	--composer
 	elseif cur==6 then
 		subtext=composer
 		
-	//back
+	--back
 	elseif cur==7 then
 		show_subtext=false
 		menu_state="main"
 		options=main
 		
-		//reset the cursor position
+		--reset the cursor position
 		return 1
 		
 	end
@@ -2751,12 +2751,12 @@ function draw_menu()
 	cls()
 	map(16,0,0,0,16,16)
 	
-	//draw the menu options
+	--draw the menu options
 	for o=1,#options do
 		double_print(options[o],(21-16)*8,6*8+2+(o-1)*8)
 	end
 	
-	//draw the menu cursor
+	--draw the menu cursor
 	spr(172,(20-16)*8,(6+cur-1)*8)
 	
 	double_print("version 0.3.1",(22-16)*8,4*8+1)
@@ -2769,19 +2769,19 @@ end
 --tab 14: records and credits
 
 function init_records()
-	//high score
+	--high score
 	high_score=dget(0)
 	
-	//furthest wave
+	--furthest wave
 	furthest_wave=dget(1)
 	
-	//most kills per shot
+	--most kills per shot
 	most_kills_per_shot=dget(2)
 	
-	//most points per shot
+	--most points per shot
 	most_points_per_shot=dget(3)
 	
-	//lifetime zombie kills
+	--lifetime zombie kills
 	lifetime_zombie_kills=dget(4)
 	
 end
