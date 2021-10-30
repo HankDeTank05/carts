@@ -26,6 +26,7 @@ t2_spawn={
 
 --the player whose turn it is
 turn=1 --either 1 or 2
+actions_per_turn=3
 
 --text dist horz/vert
 --from hud box corner
@@ -90,10 +91,8 @@ menu_empty_opts={
 	}
 }
 
---options for when the player
---selects a space in their own
---spawn area
-spawn_area_opts={
+--free spawn space menu opts
+fss_opts={
 	text={
 		"spawn new",
 		"cancel",
@@ -104,11 +103,8 @@ spawn_area_opts={
 	}
 }
 
---options for when the player
---selects an empty space on the
---grid (not in either spawn
---area)
-empty_space_opts={
+--free neutral space menu opts
+fns_opts={
 	text={
 		"cancel",
 	},
@@ -117,18 +113,37 @@ empty_space_opts={
 	}
 }
 
---options for when the player
---selects a grid space
---containing one of their own
---ships
-ship_opts={
+--enemy spawn space menu opts
+ess_opts={
+	text={
+		"cancel",
+	},
+	callback={
+		function(cur,teams,grid) menu_exit(cur) end,
+	}
+}
+
+--occupied friendly space menu
+--opts
+ofs_opts={
 	text={
 		"move",
-		"attack",
 		"cancel",
 	},
 	callback={
 		function(cur,teams,grid) menu_ship_move(cur) end,
+		function(cur,teams,grid) menu_exit(cur) end,
+	}
+}
+
+--occupied enemy space menu
+--opts
+oes_opts={
+	text={
+		"attack",
+		"cancel",
+	},
+	callback={
 		function(cur,teams,grid) menu_ship_attack(cur) end,
 		function(cur,teams,grid) menu_exit(cur) end,
 	}
@@ -346,8 +361,8 @@ end
 -->8
 --tab 3: cursor
 
-function init_cursor(n)
-	assert(n==1 or n==2, "cursor number must be 1 or 2")
+function init_cursor(team_n)
+	assert(team_n==1 or team_n==2, "cursor number must be 1 or 2")
 
 	cur={
 		--cursor mode (grid or menu)
@@ -357,16 +372,20 @@ function init_cursor(n)
 		--of cell the cursor is
 		--highlighting
 		state=states.initial_state,
+		
+		--actions per turn
+		acts_this_turn=0,
 	
 		--grid cursor
 		x=1,
 		y=1,
-		sprt_g=n,
+		sprt_g=2*team_n-1,
 		
 		--menu cursor
 		n=1,
-		sprt_m=n+1
+		sprt_m=2*team_n
 	}
+	
 	return cur
 end
 
@@ -393,64 +412,8 @@ function update_cursor(cur,grid,menu_size,teams)
 		
 		--space selection
 		if btnp(❎) then
-			if turn==1 then
-				--check if cursor is in
-				--the spawn area for team 1
-				if in_spawn_area_1(cur)	then
-					--cursor is in spawn area
-					
-					--set menu options
-					--accordingly
-					side_opts=spawn_area_opts
-					
-					--set the cursor mode to
-					--menu
-					cur.mode=mmode
-					
-				else
-					--cursor is not in spawn
-					--area
-					
-					contents=grid_get(grid,cur.x,cur.y)
-					
-					if contents==empty_space_val then
-						--cursor in empty space
-						printh("cursor is over empty space\n")
-					elseif contents.team==turn then
-						--cursor is over player's
-						--ship
-						printh("cursor is over player's ship\n")
-					else
-						--cursor is over enemy's
-						--ship
-						printh("cursor is over enemy's ship\n")
-					end
-				end
-				
-			elseif turn==2 then
-				--check if cursor is in
-				--the spawn area for team 2
-				if in_spawn_area_2(cur)	then
-					--cursor is in spawn area
-					
-					--set menu options
-					--accordingly
-					side_opts=spawn_area_opts
-					
-					--set the cursor mode to
-					--menu
-					cur.mode=mmode
-					
-				else
-					--cursor is not in spawn
-					--area
-					
-					--check if cursor is over
-					--a piece or an empty
-					--space
-				end
-			
-			end
+			set_menu_opts(cur)
+			cur.mode=mmode
 		end
 		
 	elseif cur.mode==mmode then
@@ -476,6 +439,15 @@ function update_cursor(cur,grid,menu_size,teams)
 			cur.mode=gmode
 		end
 		
+	end
+	
+	if cur.acts_this_turn>=actions_per_turn then
+		cur.acts_this_turn=0
+		if turn==1 then
+			turn=2
+		else
+			turn=1
+		end
 	end
 end
 
@@ -505,6 +477,11 @@ function in_spawn_area_2(cur)
 	       and cur.x<=t2_spawn.x2
 	       and t2_spawn.y1<=cur.y
 	       and cur.y<=t2_spawn.y2
+end
+
+function do_action(cur)
+	cur.acts_this_turn+=1
+	printh(cur.acts_this_turn.."/"..actions_per_turn.." actions taken this turn\n")
 end
 -->8
 --tab 4: team
@@ -624,6 +601,7 @@ function menu_spawn_new_r(cur,teams,grid)
 		teams[turn].active_ships+=1
 		
 		printh("spawned new rock for team "..turn.."\n")
+		do_action(cur)
 	else
 		printh("all out of rocks!\n")
 	end
@@ -651,6 +629,7 @@ function menu_spawn_new_p(cur,teams,grid)
 		teams[turn].active_ships+=1
 		
 		printh("spawned new paper for team "..turn.."\n")
+		do_action(cur)
 	else
 		printh("all out of papers!\n")
 	end
@@ -678,6 +657,7 @@ function menu_spawn_new_s(cur,teams,grid)
 		teams[turn].active_ships+=1
 		
 		printh("spawned new scissors for team "..turn.."\n")
+		do_action(cur)
 	else
 		printh("all out of scissors!\n")
 	end
@@ -785,44 +765,30 @@ function gns_logic(cur,grid)
 	return next_state
 end
 
-function gns_free_spawn_space(cur)
-	local next_state
-	
-	--fsm code goes here
-	
-	return next_state
-end
-
-function gns_free_neutral_space(cur)
-	local next_state
-	
-	--fsm code goes here
-	
-	return next_state
-end
-
-function gns_enemy_spawn_space(cur)
-	local next_state
-	
-	--fsm code goes here
-	
-	return next_state
-end
-
-function gns_occupied_friendly_space(cur)
-	local next_state
-	
-	--fsm code goes here
-	
-	return next_state
-end
-
-function gns_occupied_enemy_space(cur)
-	local next_state
-	
-	--fsm code goes here
-	
-	return next_state
+function set_menu_opts(cur)
+	if cur.state==states.free_spawn_space then
+		--fss menu opts
+		side_opts=fss_opts
+		
+	elseif cur.state==states.free_neutral_space then
+		--fns menu opts
+		side_opts=fns_opts
+		
+	elseif cur.state==states.enemy_spawn_space then
+		--ess menu opts
+		side_opts=ess_opts
+		
+	elseif cur.state==states.occupied_friendly_space then
+		--ofs menu opts
+		side_opts=ofs_opts
+		
+	elseif cur.state==states.occupied_enemy_space then
+		--oes menu opts
+		side_opts=oes_opts
+		
+	else
+		assert(false,"unable to set menu opts, unknown cursor state!")
+	end
 end
 __gfx__
 00000000cc0000cccccc000088000088888800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
