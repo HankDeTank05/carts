@@ -26,63 +26,63 @@ function _init()
 		moving=false,
 		moving_vert=false,
 		stuck=false
-		}
-		link.sprx=link.sprs[link.dir].x1--x-val of topleft px
-		link.spry=link.sprs[link.dir].y1
-		
-		students={
-			{sprx=0 ,spry=64,x=16,y=71,col=2},
-			{sprx=16,spry=64,x=16,y=95,col=8},
-			{sprx=32,spry=64,x=48,y=71,col=9},
-			{sprx=48,spry=64,x=48,y=95,col=12},
-			{sprx=64,spry=64,x=80,y=95,col=14}
-		}
-		
-		tarin={
-			sprx=64,
-			spry=32,
-			size=16,--sprite size
-			xpos=88,
-			ypos=16
-		}
-		
-		speech={
-			sprx=96,
-			spry=32,
-			width=32,
-			height=16,
-			xpos=tarin.xpos-32,
-			ypos=tarin.ypos-16,
-			show=false
-		}
-		
-		vase={
-			sprx=88,
-			spry=0,
-			size=16,
-			xpos=16,
-			ypos=40
-		}
-		
-		stack={}
-		
-		frm_ct=0
-		
+	}
+	link.sprx=link.sprs[link.dir].x1--x-val of topleft px
+	link.spry=link.sprs[link.dir].y1
+	
+	students={
+		{sprx=0 ,spry=64,x=16,y=71,col=2},
+		{sprx=16,spry=64,x=16,y=95,col=8},
+		{sprx=32,spry=64,x=48,y=71,col=9},
+		{sprx=48,spry=64,x=48,y=95,col=12},
+		{sprx=64,spry=64,x=80,y=95,col=14}
+	}
+	
+	tarin={
+		sprx=64,
+		spry=32,
+		size=16,--sprite size
+		xpos=88,
+		ypos=16
+	}
+	
+	speech={
+		sprx=96,
+		spry=32,
+		width=32,
+		height=16,
+		xpos=tarin.xpos-32,
+		ypos=tarin.ypos-16,
+		show=false
+	}
+	
+	vase={
+		sprx=88,
+		spry=0,
+		size=16,
+		xpos=16,
+		ypos=40
+	}
+	
+	stack={}
+	
+	frm_ct=0
+	
 end
 
 function _update60()
 		
-		cc_lm={x=link.xpos+2,y=link.ypos+((link.size+2)/2)+2}
-		cc_lb={x=link.xpos+2,y=link.ypos+link.size-2}
-		
-		cc_rm={x=link.xpos+link.size-1-2,y=link.ypos+((link.size+2+2)/2)+1}
-		cc_rb={x=link.xpos+link.size-1-2,y=link.ypos+link.size-2}
-		
-		cc_ul={x=link.xpos+1+2,y=link.ypos+(link.size/2)+2}
-		cc_ur={x=link.xpos+link.size-2-2,y=link.ypos+(link.size/2)+2}
-		
-		cc_dl={x=link.xpos+1+2,y=link.ypos+link.size-1}
-		cc_dr={x=link.xpos+link.size-2-2,y=link.ypos+link.size-1}
+	cc_lm={x=link.xpos+2,y=link.ypos+((link.size+2)/2)+2}
+	cc_lb={x=link.xpos+2,y=link.ypos+link.size-2}
+	
+	cc_rm={x=link.xpos+link.size-1-2,y=link.ypos+((link.size+2+2)/2)+1}
+	cc_rb={x=link.xpos+link.size-1-2,y=link.ypos+link.size-2}
+	
+	cc_ul={x=link.xpos+1+2,y=link.ypos+(link.size/2)+2}
+	cc_ur={x=link.xpos+link.size-2-2,y=link.ypos+(link.size/2)+2}
+	
+	cc_dl={x=link.xpos+1+2,y=link.ypos+link.size-1}
+	cc_dr={x=link.xpos+link.size-2-2,y=link.ypos+link.size-1}
 
 	if not(link.stuck) then
 		if btn(⬅️) and not(stack_contains(stack,"⬅️")) then
@@ -235,7 +235,7 @@ function _draw()
 	--print(link.xpos,0,6*2,0)
 	--print(link.ypos,0,6*3,0)
 	
-	--[[pset(cc_lm.x,cc_lm.y,8)
+	pset(cc_lm.x,cc_lm.y,8)
 	pset(cc_lb.x,cc_lb.y,8)
 	
 	pset(cc_rm.x,cc_rm.y,8)

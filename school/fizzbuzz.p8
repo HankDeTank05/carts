@@ -1,16 +1,58 @@
 pico-8 cartridge // http://www.pico-8.com
 version 32
 __lua__
---animation testing
---by hankdetank05
+--fizzbuzz
+--by henry
 
 function _init()
+	fzbz=fizzbuzz()
+	scroll_point=1
+	
+	view_lines=21
+	
+	full_bar_size=126
+	view_bar_size=(view_lines/#fzbz)*126-2
 end
 
 function _update60()
+	if btnp(⬆️) and scroll_point>1 then
+		scroll_point-=1
+	elseif btnp(⬇️) and scroll_point<(100-view_lines+2) then
+		scroll_point+=1
+	end
 end
 
 function _draw()
+	cls()
+	
+	--draw scrollbar
+	line(126,1,126,126,8)
+	view_bar_ypos=(scroll_point/#fzbz)*126
+	line(126,view_bar_ypos,126,view_bar_ypos+view_bar_size,7)
+	
+	--print fizzbuzz data
+	local print_point=scroll_point
+	for i=1,20 do
+		print(fzbz[scroll_point+i-1],0,i*6)
+	end
+end
+
+function fizzbuzz()
+	fbtable={}
+	for i=1,100 do
+		if i%3==0 then
+			if i%5==0 then
+				add(fbtable,"fizzbuzz")
+			else
+				add(fbtable,"fizz")
+			end
+		elseif i%5==0 then
+			add(fbtable,"buzz")
+		else
+			add(fbtable,i)
+		end
+	end
+	return fbtable
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
