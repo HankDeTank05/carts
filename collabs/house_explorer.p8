@@ -12,6 +12,26 @@ end
 
 function _draw()
 end
+
+--[[
+
+credits
+-------
+
+programming:  henry holman
+
+game design:  ruben rojas
+              sj singh
+              joseph turzitti
+              henry holman
+             
+level design: ruben rojas
+              henry holman
+              
+spritework:   sj singh
+              henry holman
+
+--]]
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
