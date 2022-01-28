@@ -30,6 +30,9 @@ level design: ruben rojas
               
 spritework:   sj singh
               henry holman
+              
+story:        ruben rojas
+              joseph turzitti
 
 --]]
 -->8
