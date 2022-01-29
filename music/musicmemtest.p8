@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 32
+version 33
 __lua__
 --jukebox template
 --by: hankdetank05
@@ -525,19 +525,9 @@ function load_believer()
 		{patid=16,bytes="0x0218150c1f"}
 	}
 	
-	--load the sfx data
-	for i=1,#sfxdata do
-		local membytes=sfx_file2mem(sfxdata[i].bytes)
-		local address=sfxaddr(sfxdata[i].sfxid)
-		memset_hexstr(address,membytes)
-	end
+	loadsfxdata(sfxdata)
 
-	--load the pattern data	
-	for i=1,#patterns do
-		local membytes=music_file2mem(patterns[i].bytes)
-		local address=musicaddr(patterns[i].patid)
-		memset_hexstr(address,membytes)
-	end
+	loadpatterns(patterns)
 	
 	loaded="believer"--]]
 	
@@ -865,6 +855,24 @@ function memset_hexstr(addr,data)
 	for i=1,#data,2 do
 		poke(addr,"0x"..sub(data,i,i+1))
 		addr+=1
+	end
+end
+
+function loadsfxdata(sfxdata)
+	--load the sfx data
+	for i=1,#sfxdata do
+		local membytes=sfx_file2mem(sfxdata[i].bytes)
+		local address=sfxaddr(sfxdata[i].sfxid)
+		memset_hexstr(address,membytes)
+	end
+end
+
+function loadpatterns(patterns)
+	--load the pattern data	
+	for i=1,#patterns do
+		local membytes=music_file2mem(patterns[i].bytes)
+		local address=musicaddr(patterns[i].patid)
+		memset_hexstr(address,membytes)
 	end
 end
 __gfx__
