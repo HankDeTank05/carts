@@ -1,0 +1,8 @@
+sprites to add
+- toilet for bathroom
+- kitchen counter
+- refrigerator
+- stairs
+
+sprites needed from SJ
+- room background tile
