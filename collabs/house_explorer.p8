@@ -4,7 +4,11 @@ __lua__
 --house explorer (working title)
 --a game jam project
 
+act=1
+
 function _init()
+	
+	printh("\n\n")
 
 	player=init_player()
 	
@@ -23,12 +27,14 @@ function _init()
 end
 
 function _update60()
-
-	update_player(player,int_obj_mgr)
-	update_map(map_data,player)
 	
-	if global_tb!=nil then
+	if global_tb==nil then
+		update_player(player,int_obj_mgr)
+		update_map(map_data,player)
+	
+	else
 		update_textbox()
+		
 	end
 	
 end
@@ -101,14 +107,15 @@ anim_first_frame=1
 function init_player()
 	
 	local player={
-		xpos= 0, --x position on map
+		xpos= 152, --x position on map
 		ypos=-1, --y position on map
+		xcenter=-1,
 		
 		xdraw=56, --x pos. on screen
 		ydraw=-1, --y pos. on screen
 		
-		floor=1,
-		layer="m",
+		floor=2,
+		layer="b",
 		
 		speed=0.75,
 		
@@ -190,28 +197,36 @@ function update_player(plr,int_mgr)
 		
 	end
 	
-	local xcenter=plr.xpos+8
-	spr_num=mget(xcenter/8,
+	plr.xcenter=plr.xpos+8
+	spr_num=mget(plr.xcenter/8,
 	             plr.ypos/8)
-	spr_below=mget(xcenter/8,
+	spr_below=mget(plr.xcenter/8,
 	               (plr.ypos/8)+5)
-	spr_overhead=mget(xcenter/8,
+	spr_overhead=mget(plr.xcenter/8,
 	                  (plr.ypos/8)
 	                  -1)
-	spr_left=mget((xcenter/8)-1,
-	              (plr.ypos/8)-1)
-	spr_right=mget((xcenter/8)+1,
-	               (plr.ypos/8)-1)
+	spr_left=mget((plr.xcenter/8)-1,
+	              (plr.ypos/8))
+	spr_right=mget((plr.xcenter/8)+1,
+	               (plr.ypos/8))
 	
 	if global_tb==nil then
 		if btn(⬅️) or btn(➡️) then
 			if btn(⬅️) then
-				if fget(spr_left)!=0 then
+				if fget(spr_left)==0x86 then
+					printh("narrow door unlock attempt (left)")
+					unlock_narrow_door(plr)
+				elseif fget(spr_left)!=0 and
+				       fget(spr_left)!=0x86 then
 					plr.xpos-=plr.speed
 				end
 				plr.right=false
 			elseif btn(➡️) then
-				if fget(spr_right)!=0 then
+				if fget(spr_right)==0x86 then
+					printh("narrow door unlock attempt (right)")
+					unlock_narrow_door(plr)
+				elseif fget(spr_right)!=0 and
+				   fget(spr_right)!=0x86 then
 					plr.xpos+=plr.speed
 				end
 				plr.right=true
@@ -236,16 +251,19 @@ function update_player(plr,int_mgr)
 	--can press ⬆️ or ⬇️ to switch
 	--floors/layers for button
 	--prompt
-	if fget(spr_num,0)
-	   or (fget(spr_num,7)
-	       and plr.floor<2) then
+	
+	--⬆️ check
+	if (fget(spr_num,0) or
+	   (not(fget(spr_num,0)) and fget(spr_num,7))
+	    and plr.floor<2) then
 		plr.can_press_up=true
 	else
 		plr.can_press_up=false
 	end
 	
+	--⬇️ check
 	if fget(spr_below,0)
-	   or (fget(spr_num,7)
+	   or (fget(spr_num,7) and not(fget(spr_num,0))
 	       and plr.floor>0) then
 	 plr.can_press_dn=true
 	else
@@ -260,13 +278,13 @@ function update_player(plr,int_mgr)
 	if #int_mgr>0 then
 		for i=1,#int_mgr do
 			local obj=int_mgr[i]
-			if obj.xpos<=xcenter and
-			   xcenter<obj.xpos+8 and
+			if obj.xpos<=plr.xcenter and
+			   plr.xcenter<obj.xpos+8 and
 			   obj.floor==plr.floor and
 			   obj.layer==plr.layer then
 			 plr.can_press_xb=true
 			 plr.int_obj_index=i
-			 printh(int_mgr[i].name)
+			 --printh(int_mgr[i].name)
 			 break
 			else
 				plr.can_press_xb=false
@@ -284,16 +302,20 @@ function update_player(plr,int_mgr)
 	
 	if btnp(⬆️) then
 	
-		--door to layer back
-		if fget(spr_num,0) then
+		--door to layer back unlocked
+		if fget(spr_num,0) and not(fget(spr_num,7)) then
 			if plr.layer=="f" then
 				plr.layer="m"
 			elseif plr.layer=="m" then
 				plr.layer="b"
 			end
 		
+		--door to layer back locked
+		elseif fget(spr_num,0) and fget(spr_num,7) then
+			unlock_wide_door(plr)
+		
 		--stairs
-		elseif fget(spr_num,7) and
+		elseif fget(spr_num,7) and not(fget(spr_num,0)) and
 		       plr.floor<2 then
 			plr.floor+=1
 			plr.layer="m"
@@ -302,8 +324,8 @@ function update_player(plr,int_mgr)
 		
 	elseif btnp(⬇️) then
 			
-		--door to layer forward
-		if fget(spr_below,0) then
+		--door to layer fwd unlocked
+		if fget(spr_below,0) and not(fget(spr_below,7)) then
 		   --[[and (plr.layer=="m"
 		        or plr.layer=="b") then--]]
 			if plr.layer=="m" then
@@ -311,9 +333,16 @@ function update_player(plr,int_mgr)
 			elseif plr.layer=="b" then
 				plr.layer="m"
 			end
+		
+		--door to layer fwd locked
+		elseif fget(spr_below,0) and fget(spr_below,7) then
+			unlock_wide_door(plr)
+			if doors.bedroom.lock==true then
+				init_locked_door_tb()
+			end
 			
 		--stairs
-		elseif fget(spr_num,7) and
+		elseif fget(spr_num,7) and not(fget(spr_num,0)) and
 		       plr.floor>0 then
 			plr.floor-=1
 			plr.layer="m"
@@ -325,14 +354,16 @@ function update_player(plr,int_mgr)
 	if btnp(❎) and plr.int_obj_index>0 then
 		local obj=del(int_mgr,int_mgr[plr.int_obj_index])
 		printh("obj.name="..obj.name)
+		--bring up text box
+		init_textbox(obj.int_text,"n",obj.int_sprn)
 		if sub(obj.name,1,10)=="diary page" then
-			--bring up text box
-			printh("bringing up text box")
-			init_textbox(obj.int_text,"n",obj.int_sprn)
-			
 			--add page to diary
-			add(obj,plr.pages)
+			add(plr.pages,obj)
 			printh("added page to diary")
+		elseif sub(obj.name,#obj.name-2,#obj.name)=="key" then
+			--add key to keyring
+			add(plr.keys,obj)
+			printh("added key to keyring")
 		end
 		plr.int_obj_index=-1
 	end
@@ -579,33 +610,42 @@ function draw_map_foreground(md,plr)
 	
 end
 -->8
---tab 3: spr flags + diary txt
+--tab 3: spr flags + tb txt
 
 --[[
 
-flag 0 : 0x01 : 0000 0001
-	door to layer back/deeper
+flag 0      : 0x01 : 0000 0001
+	unlocked door, wide
 
-flag 1 : 0x02 : 0000 0010
+flag 1      : 0x02 : 0000 0010
 	basement background
 
-flag 2 : 0x04 : 0000 0100
+flag 2      : 0x04 : 0000 0100
 	room background a
 
-flag 3 : 0x08 : 0000 1000
+flag 3      : 0x08 : 0000 1000
 	room background b
 
-flag 4 : 0x10 : 0001 0000
+flag 4      : 0x10 : 0001 0000
 	kitchen background
 
-flag 5 : 0x20 : 0010 0000
+flag 5      : 0x20 : 0010 0000
 	bathroom background
 
-flag 6 : 0x40 : 0100 0000
+flag 6      : 0x40 : 0100 0000
 	brick background
 
-flag 7 : 0x80 : 1000 0000
+flag 7      : 0x80 : 1000 0000
 	stairs
+
+flags 0&7   : 0x81 : 1000 0001
+ locked door, wide
+
+flags 1&7   : 0x82 : 1000 0010
+	unlocked door, narrow
+
+flags 1,2&7 : 0x86 : 1000 0110
+	locked door, narrow
 
 --]]
 
@@ -614,6 +654,169 @@ diary_2_bedroom="josh and andrew stole my gameboy! they said that since it was t
 diary_3_hall_closet="dad locked me in the closet. he got pissed when he found out that i broke his favorite mug. he screamed in my face until he was red before dragging me upstairs and throwing me in here. it's been hours, i haven't eaten, and i have to use the bathroom. i wish i had broken more than his stupid mug. like his teeth maybe? i wish i could get away from this shitty family. or better yet, i wish they'd all get away from me."
 diary_4_bathroom="i've been having problems with my memory lately. i keep having these blackouts and coming-to in different places, and they keep getting worse. all i can remember about yesterday is leaving the house in the morning and coming home in the afternoon. what did i do all day? i don't know. apparently, i didn't go to school--my teacher called to ask about it. i was lucky that i picked up the phone before my parents. i called my doctor today and they just asked if i was still taking my pills. of course i've been taking them! did i take them today? i can't remember, but the bottle is empty. i must have..."
 diary_5_crawlspace="they're gone :)"
+
+locked_door="the door is locked? there must be a key somewhere..."
+unlocked_door="i unlocked the door."
+
+txt_closet_key="upstairs closet key"
+txt_crawlspace_key="crawlspace key"
+txt_bro_bedroom_key="brother's beroom key"
+txt_lwr_basement_key="lower basement key"
+txt_master_bath_key="master bathroom key"
+txt_garage_key="garage key"
+
+pcbed_pill_bottle="these are my pills. i can't remember if i've taken them or not. that happens a lot."
+pcbed_key="it's the key to my door. what's it doing under my desk?"
+
+--text box prompts for act 1
+--upstairs hall
+a1_bro_bedroom_text="it's locked, as usual. but everything's quiet on the other side..."
+a1_hall_closet_door="it's locked. i bet the key is in my parents' room."
+
+--master bedroom
+a1_closet_key="it's the key to the clost. normally i'm not supposed to touch this but..."
+a1_bathroom_door="it's locked. it sounds like the sink is dripping in there."
+a1_check_nightstand="dad's stuff isn't here, but mom's is. so where is she?"
+
+--upstairs bathroom
+a1_check_mirror="i look tired. but i was just sleeping wasn't i?"
+a1_check_shower="it's still wet. there's a weird metalic smell too..."
+
+--hall closet
+a1_check_closet_page="this is one of my diary pages... what's it doing here?"
+
+--dining room
+a1_check_wall_clock="it's almost midnight. everyone should be home, where could they be? something feels off..."
+a1_check_overturned_chairs="why are these just lying on the floor? mom should have never picked them up..."
+a1_check_dining_room_table="it's been a long time since we've eaten here together."
+
+--living room
+a1_check_recliner="this is where dad sits when he gets back from work."
+a1_check_family_photo="we almost look like a happy family in this one."
+
+--kitchen
+a1_check_counter="there's a knife missing from the knife block. for some reason, that feels wrong."
+a1_check_kitchen_page="this is one of my diary pages... what's it doing here?"
+a1_check_trash="ugh, something's leaking out of the garbage! it smells awful!"
+
+--family room
+a1_check_couch="there's a layer of dust over everything. we don't spend much time here."
+
+--downstairs bathroom
+a1_check_cabinet="...? are these... my pill bottles? but i've been taking them, haven't i?"
+a1_check_bathroom_page="this is one of my diary pages... what's it doing here?"
+a1_check_bathroom_key="this key... it's for the crawlspace in the basement. what's it doing here?"
+
+--main basement
+a1_check_key="this is the key to my brothers' room. it doesn't belong here..."
+a1_check_lower_basement_door="this goes to the lower basement. it's always locked. so why does that feel so wrong?"
+a1_check_crawlspace_door="the door is locked. the key went missing a while ago, but the dust has clearly been disturbed in front of it."
+
+--crawlspace
+a1_check_knife="a kitchen knife jammed into a box. it has blood on it..."
+a1_check_crawlspace_page="this is one of my diary pages... what's it doing here?"
+
+--text box prompts for act 2
+
+--act 2 triggers when the
+--player enters the brothers'
+--bedroom. the particle
+--effects begin, along with
+--very minor additions of
+--corruption prites throughout
+--the house
+
+--brothers' bedroom
+a2_check_bed_1="this is josh's bed. it's soaked in blood..."
+a2_check_bed_2="this is andrew's bed. it looks like something hit it hard and cracked the wood."
+a2_check_blood_1="are they...? but, their bodies aren't here..."
+a2_check_blood_2="this is horrible... they didn't deserve this... did they?"
+a2_check_master_bathroom_key="the key to my parents' bathroom? why in the world is it here?"
+
+--master bathroom
+
+--corruption effect intensifies
+--throughout (particles and
+--sprites). reflections will
+--now show the alternate
+a2_enter_master_bathroom="oh god, here too? who did this? this is like a nightmare..."
+a2_check_shower="it looks like there was a struggle. the rod fell out and the curtains are a mess..."
+a2_check_bathroom_blood="there are drag marks in the blood. somebody moved the body."
+a2_check_mirror="..."
+a2_check_garage_key="the key to the garage? dad is the one who carries this."
+
+--garage
+
+--the corruption effect will
+--become the strongest
+a2_enter_garage="...! oh no... oh god..."
+a2_check_body="it's dad... there are huge gashes in his body. his face is twisted in pain."
+a2_check_blood_g1="i may not have had a good relationship with him, but this is terrifying."
+a2_check_blood_g2="how could this have happened? who could have done something so terrible?"
+a2_check_blood_g3="i can't believe he's gone"
+a2_check_lower_basement_key="the key to the lower basement. i'm not sure i want to know what's down there..."
+
+--act 3
+
+--enter the lower basement.
+--the pc walks toward the
+--bodies and stops near a
+--mirror. the reflection is
+--still the alternate
+a3_dialogue={
+	{"p","oh my god... this is sick..."},
+	{"a","sick, is it? that's rich, coming from you."},
+	{"p","who's there? show yourself!"},
+	{"a","show myself? i'm already here..."},
+	{"p","what the-? w-who are you?"},
+	{"a","tut tut, how rude! you don't recognize me? after everything we've been through? for shame."},
+	{"p","what are you talking about? this doesn't make any sense!"},
+	{"a","come now, do i need to spell things out for you? i'm a aprt of you. i've been with you for a long time, and i finally decided to do something about this horrendous family of ours."},
+	{"p","are you saying...?"},
+	{"a","i got rid of them. without those pills keeping me down, i was finally able to take control for a time. i did what we always wanted to do but you could never do."},
+	{"p","this is so wrong. you're crazy!"},
+	{"a","i don't care what you think, you've been a pushover your whole life, but when ^i'm^ in calling the shots, things will be different."},
+	{"p","what? w-what are you going to do?"},
+	{"a","i'm taking the reins"},
+	--the corruption effect
+	--covers the screen
+}
+a3_bad_ending={
+	--the corruption effect clears
+	--revealing the alternate and
+	--the player have switched
+	--places. the alternate is
+	--outside the mirror while the
+	--player is inside.
+	{"p","what? no! let me go!"},
+	{"a","i'm sorry, but that won't be happening. i'm going to take care of loose ends while you take a nice, long rest."},
+	--the alternate walks away and
+	--through the door, leaving
+	--the pc in the mirror
+	{"p","no, stop! don't leave me in here! noooo!"},
+	--the screen fades to black
+	--with the text "bad ending"
+	{"n","bad ending"},
+}
+a3_good_ending={
+	--sound of breaking glass.
+	--when corruption clears from
+	--the screen, the mirror is
+	--destroyed
+	{"p","i'm not going to let that happen. just because they were terrible to me doesn't mean i should be terrible too. i won't let this happen ever again..."},
+	--the screen fades to black
+	--with the text "good ending"
+	{"n","good ending"},
+}
+
+function init_locked_door_tb()
+	init_textbox(locked_door,"p",8)
+end
+
+function init_unlocked_door_tb()
+	init_textbox(unlocked_door,"p",8)
+end
+
 -->8
 --tab 4: object manager
 
@@ -677,6 +880,26 @@ end
 
 function init_interactibles(int_mgr)
 	
+	--pill bottle in bedroom
+	add(int_mgr,init_sobj("pill bottle",
+	                      27,
+	                      152,24,
+	                      2,"b",
+	                      false,
+	                      true,
+	                      pcbed_pill_bottle,
+	                      11))
+	
+	--pc's bedroom key
+	add(int_mgr,init_sobj("my bedroom key",
+	                      24,
+	                      104,32,
+	                      2,"b",
+	                      false,
+	                      true,
+	                      pcbed_key,
+	                      8))
+	
 	--diary page 1 (kitchen)
 	add(int_mgr,init_sobj("diary page 1 kitchen",
 	                      25,
@@ -726,6 +949,66 @@ function init_interactibles(int_mgr)
 	                      true,
 	                      diary_5_crawlspace,
 	                      9))
+	
+	--closet key (in mst.bedroom)
+	add(int_mgr,init_sobj("closet key",
+	                      24,
+	                      168,112,
+	                      2,"f",
+	                      false,
+	                      true,
+	                      txt_closet_key,
+	                      8))
+	
+	--crawlspace key (in dstairs bath)
+	add(int_mgr,init_sobj("crawlspace key",
+	                      24,
+	                      192,152,
+	                      1,"b",
+	                      false,
+	                      true,
+	                      txt_crawlspace_key,
+	                      8))
+	
+	--bro's bedroom key (in main basement)
+	add(int_mgr,init_sobj("brother's bedroom key",
+	                      24,
+	                      40,312,
+	                      0,"m",
+	                      false,
+	                      true,
+	                      txt_bro_bedroom_key,
+	                      8))
+	
+	--lo basement key (in garage)
+	add(int_mgr,init_sobj("lower basement key",
+	                      24,
+	                      144,232,
+	                      1,"f",
+	                      false,
+	                      true,
+	                      txt_lwr_basement_key,
+	                      8))
+	
+	--master bath key (in bro bed)
+	add(int_mgr,init_sobj("master bathroom key",
+	                      24,
+	                      176,64,
+	                      2,"m",
+	                      false,
+	                      true,
+	                      txt_master_bath_key,
+	                      8))
+	
+	--garage key (in master bath)
+	add(int_mgr,init_sobj("garage key",
+	                      24,
+	                      64,96,
+	                      2,"f",
+	                      false,
+	                      true,
+	                      txt_garage_key,
+	                      8))
 	
 end
 -->8
@@ -876,9 +1159,9 @@ function init_textbox(str_,
 		str=str_,
 		col=-1,
 		lines={},
-		curr_line=0,
+		curr_line=1,
 		spr_num=spr_num_,
-		btn_released=true,
+		btn_released=false,
 	}
 	
 	if char_=="p" then
@@ -1041,6 +1324,257 @@ function draw_p(p)
 	local pcol=flr(p.life/p.life_start*#c_cols+1)
 	pset(p.x,p.y,c_cols[pcol])
 end
+-->8
+--tab 8: door unlocking
+
+doors={
+	
+	closet={
+		lock=true,
+		tiles={
+			{x=9,y=6},
+			{x=9,y=7},
+			{x=9,y=8},
+			{x=9,y=9},
+		},
+		size="narrow",
+	},
+	
+	crawlspace={
+		lock=true,
+		tiles={
+			{x=6,y=41},
+			{x=7,y=41},
+			{x=6,y=42},
+			{x=7,y=42},
+			{x=6,y=43},
+			{x=7,y=43},
+			{x=6,y=44},
+			{x=7,y=44},
+		},
+		size="wide",
+	},
+	
+	bro_bedroom={
+		lock=true,
+		tiles={
+			{x=18,y=6},
+			{x=18,y=7},
+			{x=18,y=8},
+			{x=18,y=9},
+		},
+		size="narrow",
+	},
+	
+	lo_basement={
+		lock=true,
+		tiles={
+			{x=2,y=36},
+			{x=3,y=36},
+			{x=2,y=37},
+			{x=3,y=37},
+			{x=2,y=38},
+			{x=3,y=38},
+			{x=2,y=39},
+			{x=3,y=39},
+		},
+		size="wide",
+	},
+	
+	master_bath={
+		lock=true,
+		tiles={
+			{x=11,y=11},
+			{x=11,y=12},
+			{x=11,y=13},
+			{x=11,y=14},
+		},
+		size="narrow",
+	},
+	
+	garage={
+		lock=true,
+		tiles={
+			{x=22,y=26},
+			{x=23,y=26},
+			{x=22,y=27},
+			{x=23,y=27},
+			{x=22,y=28},
+			{x=23,y=28},
+			{x=22,y=29},
+			{x=23,y=29},
+		},
+		size="wide",
+	},
+	
+	bedroom={
+		lock=true,
+		tiles={
+			{x=16,y=6},
+			{x=17,y=6},
+			{x=16,y=7},
+			{x=17,y=7},
+			{x=16,y=8},
+			{x=17,y=8},
+			{x=16,y=9},
+			{x=17,y=9},
+		},
+		size="wide",
+	}
+	
+}
+
+wide_unlocked_tiles={
+	 66, 67,
+	 82, 83,
+	 98, 99,
+	114,115,
+}
+
+narrow_unlocked_tiles={
+	141,
+	157,
+	173,
+	189,
+}
+
+function unlock_wide_door(plr)
+	
+	printh("attempting to unlock")
+	printh("("..plr.xpos..","..plr.ypos..")")
+	printh("floor="..plr.floor)
+	printh("layer="..plr.layer)
+	local unlocked=false
+	
+	--check for crawlspace unlock
+	if 6*8<plr.xcenter and plr.xcenter<=8*8
+	   and plr.floor==0
+	   and plr.layer=="m" then
+		if search_for_key("crawlspace",plr) then
+			set_wide_door_tiles(doors.crawlspace.tiles)
+			doors.crawlspace.lock=false
+			unlocked=true
+		end
+	
+	--check for lo basement unlock
+	elseif 2*8<plr.xcenter and plr.xcenter<=4*8
+	       and plr.floor==0
+	       and plr.layer=="m" then
+		if search_for_key("lower basement",plr) then
+			set_wide_door_tiles(doors.lo_basement.tiles)
+			doors.lo_basement.lock=false
+			unlocked=true
+		end
+	
+	--check for garage unlock
+	elseif 22*8<plr.xcenter and plr.xcenter<=24*8
+	       and plr.floor==1
+	       and plr.layer=="m" then
+	 if search_for_key("garage",plr) then
+	 	set_wide_door_tiles(doors.garage.tiles)
+	 	doors.garage.lock=false
+	 	unlocked=true
+	 end
+	
+	--check for bedroom door
+	elseif 16*8<plr.xcenter and plr.xcenter<=18*8
+	       and plr.floor==2
+	       and plr.layer=="b" then
+	 printh("bedroom door unlock attempt")
+		if search_for_key("my bedroom",plr) then
+			set_wide_door_tiles(doors.bedroom.tiles)
+			doors.bedroom.lock=false
+			unlocked=true
+		end
+	end
+	
+	if unlocked==true then
+		init_unlocked_door_tb()
+	end
+	
+end
+
+function unlock_narrow_door(plr)
+	
+	local unlocked=false
+	
+	printh("("..plr.xpos..","..plr.ypos..")")
+	
+	
+	--check for closet unlock
+	if 9*8<plr.xpos and plr.xpos<=11*8
+	   and plr.floor==2
+	   and plr.layer=="m" then
+	 if search_for_key("closet",plr) then
+	 	set_narrow_door_tiles(doors.closet.tiles)
+	 	doors.closet.lock=false
+	 	unlocked=true
+	 end
+	
+	--check for master bath unlock
+	elseif 11*8<plr.xpos and plr.xpos<=13*8
+	   and plr.floor==2
+	   and plr.layer=="f" then
+		if search_for_key("master bathroom",plr) then
+			set_narrow_door_tiles(doors.master_bath.tiles)
+			doors.master_bath.lock=false
+			unlocked=true
+		end
+	
+	--check for bro bedroom unlock
+	elseif 15*8<plr.xpos and plr.xpos<=17*8
+	       and plr.floor==2
+	       and plr.layer=="m" then
+	 if search_for_key("brother's bedroom",plr) then
+	 	set_narrow_door_tiles(doors.bro_bedroom.tiles)
+	 	doors.bro_bedroom.lock=false
+	 	unlocked=true
+	 else --don't have the key
+	 	if act==1 then
+	 		--text box goes here
+	 	elseif act==2 then
+	 		--text box goes here
+	 	elseif act==3 then
+	 		--text box goes here
+	 	end
+	 end
+	
+	end
+	
+	if unlocked==true then
+		init_unlocked_door_tb()
+	end
+	
+end
+
+function search_for_key(room_name,plr)
+	printh("room name="..room_name)
+	printh("#plr.keys="..#plr.keys)
+	for i=1,#plr.keys do
+		printh("substring="..sub(plr.keys[i].name,1,#room_name))
+		if sub(plr.keys[i].name,1,#room_name)==room_name then
+			printh("key accepted")
+			return true
+		end
+	end
+	
+	return false
+	
+end
+
+function set_wide_door_tiles(tiles)
+	assert(#tiles==#wide_unlocked_tiles)
+	for i=1,#tiles do
+		mset(tiles[i].x,tiles[i].y,wide_unlocked_tiles[i])
+	end
+end
+
+function set_narrow_door_tiles(tiles)
+	assert(#tiles==#narrow_unlocked_tiles)
+	for i=1,#tiles do
+		mset(tiles[i].x,tiles[i].y,narrow_unlocked_tiles[i])
+	end
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000ffffff0000000aaaa0000000000000000880067760066666665666566654444444454544544
 0000000000000000000000000000000000000000000000000000f0f00f0f00000aa99aa07777777000000668067777606777776567555765ffffffff55545454
@@ -1096,7 +1630,7 @@ eeeffffffeeeee00eeefffffffeee000eeeffffffeeeee0000f0500000050f000000000000000000
 544445444445544554444444455000057777777777777d6755555555555555557777777777777777000066744ddddd0007777777777777700000000000000000
 544444444444444554444444444000057777777777777677444444444444444477dddddddddddd77000670744555000000777770077777000000000000000000
 54444444444444455444444444400005777777777777777745555554455555547776666666666777006070744ddd000000666660066666000000000000000000
-54444444444444455444444444400005777777777777777745444454454444547777777777777777067070744500000000666660066666000000000000000000
+54444444444444455444444444400005777777777777777745444454454444547777777777777777067070744500000007666667766666700000000000000000
 54454444454444455454444544400005777777777777777745444454454444547755555555555577067070744d00000007777777777777700000000000000000
 54454444454444455454444544400005777777777777777745444454454444547755555555555577607070644000000060707064400000000000000000000000
 544544444544444554544445444000057777777777777777454449544594445477555555555555777bb070d440000880707070d4400000000000000000000000
@@ -1106,38 +1640,38 @@ eeeffffffeeeee00eeefffffffeee000eeeffffffeeeee0000f0500000050f000000000000000000
 544444444444444554444444444000057777777777777777454444544544445477555555555555777bbdddd44000088070ddddd4400000000000000000000000
 544444444444444554444444000000057777777777777777455555544555555477777777777777776bb666644000888866666664400000000000000000000000
 54444444444444455444000000000005777777777777777744444444444444447777777777777777dbbdddd440000880ddddddd4400000000000000000000000
-c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1000000000000111111111111111111111111055555555555555500000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000177166611171666117716661051111111111111100000000000000000000000000000000
-c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1000000000000711761161771611671176116051111111111111100000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000111766611171666171776661051111111111111100000000000000000000000000000000
-c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1000000000000117161161171611677176116051111111111111100000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000171161161171611671176116051111111111111100000000000000000000000000000000
-e0e0e0e0e0e0e0e0e0e0e0e0e0e00000000000000000000000000000777766667777666617716666051111111111111100000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000111111111111111111111111051111111111111100000000000000000000000000000000
-e0e02434e0e0e0e0e0e0e0e0a4b40000000000000000000000000000111111111111111111111111051111111111111100000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000177161161171611617716116051111111111111100000000000000000000000000000000
-e0e02535e0e0e0e0e0e0e0e0a5b50000000000000000000000000000711766661771666671176666051111111111111100000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000111761661171616671776166051111111111111100000000000000000000000000000000
-e0e02636e0e0e0e0e0e0e0e0a6b60000000000000000000000000000117161161171611677176116051111111111111100000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000171161161171611671176116051111111111111100000000000000000000000000000000
-e0e02737e0e0e0e0e0e0e0e0a7d70000000000000000000000000000777761167777611617716116055555555555555500000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000111111111111111111111111000000000000000000000000000000000000000000000000
-c1c1c1c1c1c1c1c1c1c1c1c1c1c10000000000000000000000000000111111111111111111111111000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000177166661171666617716666000000000000000000000000000000000000000000000000
-c1c1c1c1c1c12434c1c1c1c1c1c10000000000000000000000000000711761111771611171176111000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000111761111171611171776111000000000000000000000000000000000000000000000000
-c1c1c1c1c1c12535c1c1c1c1c1c10000000000000000000000000000117166611171666177176661000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000171161111171611171176111000000000000000000000000000000000000000000000000
-c1c1c1c1c1c12636c1c1c1c1c1c10000000000000000000000000000777761117777611117716111000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000111111111111111111111111000000000000000000000000000000000000000000000000
-c1c1c1c1c1c12737c1c1c1c1c1c10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1000000000000111111111111111111111111055555555555555500550000005500000000000000000000
+00000000000000000000000000000000000000000000000000000000177166611171666117716661051111111111111100550000005500450000000000000000
+c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1000000000000711761161771611671176116051111111111111100550000005504450000000000000000
+00000000000000000000000000000000000000000000000000000000111766611171666171776661051111111111111100550000005544450000000000000000
+c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1000000000000117161161171611677176116051111111111111100550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000171161161171611671176116051111111111111100550000005544450000000000000000
+e0e0e0e0e0e0e0e0e0e0e0e0e0e00000000000000000000000000000777766667777666617716666051111111111111100550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000111111111111111111111111051111111111111100550000005545450000000000000000
+e0e00414e0e0e0e0e0e0e0e0a4b40000000000000000000000000000111111111111111111111111051111111111111100550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000177161161171611617716116051111111111111100550000005545450000000000000000
+e0e00515e0e0e0e0e0e0e0e0a5b50000000000000000000000000000711766661771666671176666051111111111111100550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000111761661171616671776166051111111111111100550000005544450000000000000000
+e0e00616e0e0e0e0e0e0e0e0a6b60000000000000000000000000000117161161171611677176116051111111111111100550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000171161161171611671176116051111111111111100550000005544450000000000000000
+e0e00717e0e0e0e0e0e0e0e0a7d70000000000000000000000000000777761167777611617716116055555555555555500550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000111111111111111111111111000000000000000009559000005549950000000000000000
+c1c1c1c1c1c1c1c1c1c1c1c1c1c100000000000000000000000000001111111111111111111111110000000000000000095590000055499d0000000000000000
+00000000000000000000000000000000000000000000000000000000177166661171666617716666000000000000000000550000005545550000000000000000
+c1c1c1c1c1c10414c1c1c1c1c1c10000000000000000000000000000711761111771611171176111000000000000000000550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000111761111171611171776111000000000000000000550000005544450000000000000000
+c1c1c1c1c1c10515c1c1c1c1c1c10000000000000000000000000000117166611171666177176661000000000000000000550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000171161111171611171176111000000000000000000550000005544450000000000000000
+c1c1c1c1c1c10616c1c1c1c1c1c10000000000000000000000000000777761117777611117716111000000000000000000550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000111111111111111111111111000000000000000000550000005545450000000000000000
+c1c1c1c1c1c10717c1c1c1c1c1c10000000000000000000000000000000000000000000000000000000000000000000000550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005545450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005544450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005504450000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000550000005500450000000000000000
 00000fff8f9000000000000000000000000008800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000fffff8ff990000000000000000000880088800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00ffffff8ffff9000000000000000000888888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1171,8 +1705,8 @@ ffffffff8ffffff90000000000000000000000000000000000000000000000000000000000000000
 00cccccc8cccc1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00cccccc8cccc1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0000000000000000000000002010040000000000000000000000000002088040000000000000000000000000000000000000000000000000000000000000000001010101101000000000808000000000010101011010000000308080202000000101010110103030101080802020000001010101101030301010808080800000
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000002010040000000000000000000000000002088040000000000000000000000000000000000000000000000000000000000000000081810101101000000000808000000000818101011010000000308080202000008181010110103030101080802020000081810101101030301010808080800000
+0000000000000000000000008682000000000000000000000000000086820000000000000000000000000000868200000000000000000000000000008682000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 00000000000000000c0c0c0c001d1d1d1d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000c0c0c0c001d1d1d1d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1180,15 +1714,15 @@ __map__
 00000000000000005c0c6667001d1d1d1d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000006c0c7677001d1d1d1d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000001d1d1d1d0e0e0e0e0e0e0e0e1d1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000001d1d1d1d42434a4b0e0e42431d1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000001d1d1d1d52535a5b0e0e52531d1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000001d1d1d1d62636a6b0e0e62631d1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000001d1d1d1d72737c7b0e0e72731d1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000c0c0c0c1d1d1d1d1d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000c0c0c0c1d1d42431d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000c0c0c591d1d52531d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000005c0c66671d1d62631d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000006c0c76771d1d72731d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000001d1d1d8c42434a4b0e0e40418c1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000001d1d1d9c52535a5b0e0e50519c1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000001d1d1dac62636a6b0e0e6061ac1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000001d1d1dbc72737c7b0e0e7071bc1d1d1d1d1d1d1d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000c0c0c0c0c0c0c0c1d1d1d1d1d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000c0c0c0c0c0c0c8c1d1d42431d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000c0c0c0c590c0c9c1d1d52531d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000005c0c666766670cac1d1d62631d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000006c0c767776770cbc1d1d72731d1d1d1d1d1d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0d0d0d0d0d0d0d0d0d0d0d0d1d1d1d1d1d1d1d1d1d1d0c0c0c0c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 44450d0d0d0d0d0d0d0d0d0d1d1d1d1d1d1d1d1d1d1d0c0c0c0c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 54550d0d0d0d0d590d0d0d0d1d1d1d1d1d1d1d1d1d1d0c590c0c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1200,9 +1734,9 @@ __map__
 1d1d1d1d1d1d1d1d1d1d1d1d6a6b1d1d62630e0e0e0e0e0e0e0e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1d1d1d1d1d1d1d1d1d1d1d1d7a7b1d1d72730e0e0e0e0e0e0e0e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e001f1f1f1f1f1f1f1f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e0e0e0e0e0e0e0e42430e0e0e0e0e0e001f1f1f1f1f42431f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e0e0e0e0e0e0e0e52530e0e0e0e0e0e001f1f1f1f1f52531f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e0e0e0e0e0e0e0e62630e0e0e0e0e0e001f1f1f1f1f62631f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e0e0e0e0e0e0e0e72730e0e0e0e0e0e001f1f1f1f1f72731f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e0e0e0e0e0e0e0e42430e0e0e0e0e0e001f1f1f1f1f40411f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e0e0e0e0e0e0e0e52530e0e0e0e0e0e001f1f1f1f1f50511f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e0e0e0e0e0e0e0e62630e0e0e0e0e0e001f1f1f1f1f60611f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e0e0e0e0e0e0e0e72730e0e0e0e0e0e001f1f1f1f1f70711f1f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
