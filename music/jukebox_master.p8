@@ -43,6 +43,7 @@ spr_size=8
 --songs--
 ---------
 function load_music()
+	assert(false)
 end
 -->8
 --tab 2: list state
