@@ -36,6 +36,10 @@ txt_xsize=4
 txtbtn_xsize=7
 
 spr_size=8
+
+now_playing_index=nil
+now_playing_song="song name"
+now_playing_artist="artist name"
 -->8
 --tab 2: list state
 
@@ -73,8 +77,6 @@ list_total_ysize=nil
 list_dy_min=nil
 list_dy_max=vport_ymin+3
 list_dy=list_dy_max
-
-now_playing_index=nil
 
 cursor_index=1
 cursor_x0=list_txt_xpos-2
@@ -269,6 +271,23 @@ plr_motion=0
 --  0 = not animating
 -- -1 = animating out
 
+--is something playing?
+plr_playing=false
+
+--player controls sprite ids
+--(constants)
+prev_spr_up=16
+prev_spr_dn=17
+paus_spr_up=32
+paus_spr_dn=33
+play_spr_up=48
+play_spr_dn=49
+next_spr_up=0
+next_spr_dn=1
+--(vars used for drawing)
+prev_ctrl_spr_id=prev_spr_up
+plps_ctrl_spr_id=play_spr_up
+next_ctrl_spr_id=next_spr_up
 
 
 function set_player_state()
@@ -299,22 +318,23 @@ function update_player_state()
 		end
 		
 	else--if not animating
-		--read for input
+		--read for input (press)
 		if btnp(🅾️) then
 			--begin closing animation
 			plr_motion=-1
 			--note: state changes after animation
 		elseif btnp(❎) then
-			--play/pause
+			play_pause()
 		elseif btnp(⬅️) then
-			--skip back
+			skip_back()
 		elseif btnp(➡️) then
-			--skip fwd
+			skip_fwd()
 		elseif btnp(⬆️) then
 			--toggle shuffle
 		elseif	btnp(⬇️) then
 			--rotate repeat state
 		end
+		set_ctrl_spr_ids()
 	end
 end
 
@@ -346,8 +366,8 @@ function draw_player_state()
 	local shuf_ypos=spr_size--shuffle control ypos
 	local rept_ypos=spr_size*2--repeat control ypos
 	
-	local txtcol_song=8--text color of the song name
-	local txtcol_artist=2--text color of the artist name
+	local txtcol_song=7--text color of the song name
+	local txtcol_artist=6--text color of the artist name
 	local txt_yspace=1--vertical spacing between text
 
 	--top rounded corner
@@ -366,17 +386,26 @@ function draw_player_state()
 		bground)
 	
 	--album art
-	sspr(64,0,
-		64,64,
-		curr_x+aart_xoff,aart_ypos)
+	sspr(64,0, --draw from (64,0)
+	           --on spritesheet
+	           
+		64,64, --draw 64 x 64 pixels
+		       --from spritesheet
+		       
+		--draw at calculated position
+		curr_x+aart_xoff,aart_ypos,
+		
+		64,64) --draw selected area
+		       --as 64 x 64 (size on
+		       --screen)
 	
 	--song name
-	print("song name goes here",
+	print(now_playing_song,
 		curr_x+aart_xoff,
 		aart_ypos+aart_dsize+txt_yspace,
 		txtcol_song)
 	--artist name
-	print("artist name goes here",
+	print(now_playing_artist,
 		curr_x+aart_xoff,
 		aart_ypos+aart_dsize+txt_yspace+txt_ysize+txt_yspace,
 		txtcol_artist)
@@ -387,15 +416,15 @@ function draw_player_state()
 	local btn_dypos=ctrl_dypos+spr_size+txt_yspace
 	
 	--prev ctrl
-	spr(16,
+	spr(prev_ctrl_spr_id,
 		curr_x+prev_xoff,
 		ctrl_dypos)
-	--play ctrl
-	spr(32,
+	--play/pause ctrl
+	spr(plps_ctrl_spr_id,
 		curr_x+play_xoff,
 		ctrl_dypos)
 	--next ctrl
-	spr(0,
+	spr(next_ctrl_spr_id,
 		curr_x+next_xoff,
 		ctrl_dypos)
 
@@ -420,7 +449,83 @@ function draw_player_state()
 	end
 	
 	--for debugging
-	print(plr_anim,0,0,7)
+	--print(plr_anim,0,0,7)
+	--print(now_playing_index)
+end
+
+function play_pause()
+	if plr_playing==true then
+		music(-1)
+		plr_playing=false
+	else
+		assert(now_playing_index!=nil)
+		assert(now_playing_index>-1)
+		music(library[now_playing_index].start)
+		plr_playing=true
+	end
+end
+
+function skip_back()
+	--decrement the song index
+	now_playing_index-=1
+	--loop around if at first song
+	if now_playing_index<1 then
+		now_playing_index=#library
+	end
+	--play the song
+	load_and_play(library[now_playing_index])
+end
+
+function skip_fwd()
+	--increment the song index
+	now_playing_index+=1
+	--loop around if at last song
+	if now_playing_index>#library then
+		now_playing_index=1
+	end
+	--play the song
+	load_and_play(library[now_playing_index])
+end
+
+function set_ctrl_spr_ids()
+	--read for input (holds)
+	
+	--play/pause control
+	if btn(❎) then
+		if plr_playing==true then
+			--pause is down
+			plps_ctrl_spr_id=paus_spr_dn
+		else
+			--play is down
+			plps_ctrl_spr_id=play_spr_dn
+		end
+	else
+		if plr_playing==true then
+			--pause is up
+			plps_ctrl_spr_id=paus_spr_up
+		else
+			--play is up
+			plps_ctrl_spr_id=play_spr_up
+		end
+	end
+	
+	--prev control
+	if btn(⬅️) then
+		--prev is down
+		prev_ctrl_spr_id=prev_spr_dn
+	else
+		--prev is up
+		prev_ctrl_spr_id=prev_spr_up
+	end
+	
+	--next control
+	if btn(➡️) then
+		--next is down
+		next_ctrl_spr_id=next_spr_dn
+	else
+		--next is up
+		next_ctrl_spr_id=next_spr_up
+	end
 end
 -->8
 --tab 4: music data
@@ -1138,6 +1243,9 @@ function load_and_play(data)
 	print("load and play")
 	load_song(data)
 	music(data.start)
+	plr_playing=true
+	now_playing_song=data.name
+	now_playing_artist=data.artist
 end
 
 function loadsfxdata(sfxdata)
