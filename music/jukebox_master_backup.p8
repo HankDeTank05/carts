@@ -37,7 +37,7 @@ txtbtn_xsize=7
 
 spr_size=8
 
-now_playing_index=0
+now_playing_index=nil
 now_playing_song="none"
 now_playing_artist="none"
 -->8
@@ -85,7 +85,7 @@ smenu_txtcol=14
 smenu_selcol=2
 smenu_bgcol=8
 smenu_txt_yspace=2
-sort_pfix="sort:"
+sort_pfix="sort: "
 smenu_max_chars=0
 for m=1,#sort_modes do
 	local curr_chars=#sort_modes[m]
@@ -384,10 +384,10 @@ next_ctrl_spr_id=next_spr_up
 --album art draw vars
 plr_art_sx=64
 plr_art_sy=0
-plr_art_sw=32
-plr_art_sh=32
-plr_art_dw=64
-plr_art_dh=64
+plr_art_sw=64
+plr_art_sh=64
+plr_art_dw=plr_art_sw
+plr_art_dh=plr_art_sh
 
 
 function set_player_state()
@@ -646,120 +646,7 @@ function set_ctrl_spr_ids()
 end
 -->8
 --tab 4: music data
-
 #include music_library.p8
-
---[[
-note: sfx hexadeximal data is
-taking up approx. 41,108 chars
-which is 63% of the char limit
-in pico-8. find a way to
-compress this data to increase
-max song capacity
-
-the current system stores the
-hex data as a string, copied
-directly from a separate p8
-file's __sfx__ section. when a
-song is loaded, it is converted
-on-the-fly from the p8 format
-to the memory format and is the
-sole song in memory. this
-happens every single time the
-same song is loaded, regardless
-of if it has been loaded
-previously.
-
-one sfx is 84 bytes in the p8
-file format. accounting for the
-leading "0x" and a opening and
-closing quote, that's 172 chars
-per sfx, and the number of
-sfx's dwarfs the amount of any
-other kind of data.
-
-one sfx as it is stored in
-memory is 68 bytes. again,
-accounting for a leading "0x"
-and a opening and closing quote,
-that's 72 chars per sfx, which
-is 42% of their current size.
-
-if every sfx was pre-converted
-from p8 format to memory format,
-with no on-the-fly or repeated
-conversions would increase char
-usage efficiency by 58%. in
-other words, using our current
-char count for sfx *alone*, the
-count would drop from 41,108 to
-17,208, dropping the current
-character count usage from 63%
-to 26%.
---]]
-
---[[
-and then there's the problem of
-album art. the current spec for
-album art is 64 x 64 px. one
-pixel is one nybble/char. one
-row of pixels is 64 chars, with
-4 extra for the leading "0x"
-and opening and closing quotes.
-this means that one piece of
-album art will take up 4,352
-chars.
-
-copying the p8 format directly
-from another cart or
-pre-converting them to memory
-format will make no difference
-in char usage, since the memory
-format is just the p8 format
-with the two digits of each
-byte swapped.
-
-there are currently 9 songs in
-the jukebox. since every song
-has a unique album cover, this
-will eventually take up 39,168
-chars. accounting for the three
-songs planned to be added, that
-brings the final total char
-usage for album art alone to
-52,224. worse than the original
-char usage for sfx, 80% of the
-total character count. yeah
-okay that's not happening.
-
-if the album art spec changes
-to 32 x 32 px, (accounting for
-leading "0x" and two quotes)
-that leaves each album cover
-taking up only 1,152 chars.
-10,368 chars for the existing 9,
-13,824 chars for all 12 in the
-end. in other words, by halving
-the size of the album art, the
-area (pixel count) decreases by
-75%, leaving us with 26% of the
-larger art's char usage (the
-math here isn't perfectly 1/4
-char usage because of the "0x"s
-and quotes are factored into
-this calculation.
---]]
-
-function init_library()
-	--update variables which depend
-	--on library size
-	list_total_ysize=(list_item_ysize+list_item_yspace)*#library+list_item_yspace
-	list_dy_min=vport_ymin-list_total_ysize+viewport_height
-	--[[
-	scroll_bar_dy_max=scroll_bground_ypos+scroll_ysize
-	scroll_bar_height=(viewport_height/list_total_ysize)*scroll_ysize
-	]]
-end
 -->8
 --tab 5: music mem util
 
@@ -879,8 +766,7 @@ end--tab 1: util f(x)'s
 
 function str_hex2bin(hexstr)
 	
-	assert(sub(hexstr,1,2)=="0x",
-		"hex strings must lead with '0x'! "..hexstr)
+	assert(sub(hexstr,1,2)=="0x","hex strings must lead with '0x'!")
 	
 	local binstr="0b"
 	
