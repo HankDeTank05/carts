@@ -117,10 +117,11 @@ function init_cell(x,y)
 	assert(x!=nil)
 	assert(y!=nil)
 	local cell={
+		collapsed=false,
 		entlist={},
 		edges={
-			n={},e={},s={},w={}
-		}
+			n={},e={},s={},w={},
+		},
 		pos={x=nil,y=nil},
 		
 		entropy=function(self)
@@ -155,17 +156,39 @@ function init_cell(x,y)
 			end
 			assert(valid==true)
 			self.entlist={tile_id}
+			self.collapsed=true
 		end,
 	}
 	
-	--populate the entropy list
-	--with tile id's
 	for t=tile_data.first,tile_data.last do
+		--populate the entropy list
+		--with tile ids
 		add(cell.entlist,t)
+		
+		--populate edge lists
+		local dirs={"n","e","s","w"}
+		for d=1,#dirs do
+			local dir=dirs[d]
+			local edge=tiles[t][dir]
+			local e_exists=false
+			for e=1,#cell.edges.n do
+				if cell.edges[dir][e][1]==edge[1] and
+				   cell.edges[dir][e][2]==edge[2] and
+				   cell.edges[dir][e][3]==edge[3] then
+					e_exists=true
+					break
+				end
+			end
+			if e_exists==false then
+				add(cell.edges[dir],edge)
+			end
+		end
 	end
 	
 	cell.pos.x=x
 	cell.pos.y=y
+	
+	assert(cell.collapsed==false)
 	
 	return cell
 end
