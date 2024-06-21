@@ -18,7 +18,7 @@ function _init()
 	start_game()
 end
 
-function _update()
+function _update60()
 	t+=1
 	_update_state()
 end
@@ -32,6 +32,9 @@ function start_game()
 	p_y=5--player y-pos (map y)
 	p_xoff=0--x-offset, for smooth movement between map tiles
 	p_yoff=0--y-offset, for smooth movement between map tiles
+	p_start_xoff=0
+	p_start_yoff=0
+	p_t=0--animation timer
 end
 -->8
 --tab 1: update functions
@@ -45,8 +48,11 @@ function update_game()
 			local dy=diry[b+1]
 			p_x+=dx
 			p_y+=dy
-			p_xoff=dx*-8
-			p_yoff=dy*-8
+			p_start_xoff=dx*-8
+			p_start_yoff=dy*-8
+			p_xoff=p_start_xoff
+			p_yoff=p_start_yoff
+			p_t=0
 			_update_state=update_pturn
 		end
 	end
@@ -56,21 +62,17 @@ function update_pturn()
 	--what happens during the
 	--player's turn
 	
-	if p_xoff>0 then
-		p_xoff-=1
-	elseif p_xoff<0 then
-		p_xoff+=1
-	end
+	--clamp the timer, always <=1
+	p_t=min(p_t+0.125,1)
 	
-	if p_yoff>0 then
-		p_yoff-=1
-	elseif p_yoff<0 then
-		p_yoff+=1
-	end
+	p_xoff=p_start_xoff*(1-p_t)
+	p_yoff=p_start_yoff*(1-p_t)
 	
-	if p_xoff==0 and p_yoff==0 then
+	--if anim is done...
+	if p_t==1 then
 		_update_state=update_game
 	end
+	
 end
 
 function update_gameover()
@@ -96,7 +98,7 @@ end
 
 function getframe(_anim)
 	--anim is an array of spr nums
-	local frame_num=(flr(t/8) % #_anim) + 1
+	local frame_num=(flr(t/15) % #_anim) + 1
 	return _anim[frame_num]
 end
 
