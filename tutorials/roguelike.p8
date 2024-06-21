@@ -41,10 +41,12 @@ function update_game()
 	--token-optimized!
 	for b=0,3 do
 		if btnp(b) then
-			p_x+=dirx[b+1]
-			p_y+=diry[b+1]
-			p_xoff=dirx[b+1]*-8
-			p_yoff=diry[b+1]*-8
+			local dx=dirx[b+1]
+			local dy=diry[b+1]
+			p_x+=dx
+			p_y+=dy
+			p_xoff=dx*-8
+			p_yoff=dy*-8
 			_update_state=update_pturn
 		end
 	end
