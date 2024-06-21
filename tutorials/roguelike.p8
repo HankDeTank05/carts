@@ -76,6 +76,7 @@ end
 function move_walk()
 	--player moves smoothly from
 	--one tile to the next
+	
 	p_xoff=p_start_xoff*(1-p_t)
 	p_yoff=p_start_yoff*(1-p_t)
 end
@@ -83,6 +84,7 @@ end
 function move_bump()
 	--player bumps into a tile
 	--and then moves back
+	
 	local tmr=p_t
 	
 	if p_t>0.5 then
