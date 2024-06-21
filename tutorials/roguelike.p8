@@ -83,13 +83,14 @@ end
 function move_bump()
 	--player bumps into a tile
 	--and then moves back
-	if p_t<0.5 then
-		p_xoff=p_start_xoff*p_t
-		p_yoff=p_start_yoff*p_t
-	else
-		p_xoff=p_start_xoff*(1-p_t)
-		p_yoff=p_start_yoff*(1-p_t)
+	local tmr=p_t
+	
+	if p_t>0.5 then
+		tmr=1-p_t
 	end
+	
+	p_xoff=p_start_xoff*tmr
+	p_yoff=p_start_yoff*tmr
 end
 -->8
 --tab 2: draw functions
