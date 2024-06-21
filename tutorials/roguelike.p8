@@ -6,13 +6,6 @@ __lua__
 function _init()
 	t=0 --frame count
 	p_anim={240,241,242,243}
-	
-	--     0  1  2  3
-	--    ⬅️ ➡️ ⬆️ ⬇️
-	--     l  r  u  d
-	dirx={-1, 1, 0, 0}
-	diry={ 0, 0,-1, 1}
-	
 	_update_state=update_game
 	_draw_state=draw_game
 	start_game()
@@ -38,15 +31,25 @@ end
 
 function update_game()
 	--read inputs and move player
-	--token-optimized
-	for b=0,3 do
-		if btnp(b) then
-			p_x+=dirx[b+1]
-			p_y+=diry[b+1]
-			p_xoff=dirx[b+1]*-8
-			p_yoff=diry[b+1]*-8
-			_update_state=update_pturn
-		end
+	if btnp(⬅️) then
+		p_x-=1
+		p_xoff=8
+		_update_state=update_pturn
+	end
+	if btnp(➡️) then
+		p_x+=1
+		p_xoff=-8
+		_update_state=update_pturn
+	end
+	if btnp(⬆️) then
+		p_y-=1
+		p_yoff=8
+		_update_state=update_pturn
+	end
+	if btnp(⬇️) then
+		p_y+=1
+		p_yoff=-8
+		_update_state=update_pturn
 	end
 end
 
