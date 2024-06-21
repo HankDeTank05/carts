@@ -46,7 +46,7 @@ num | hex  | color  | meaning
 
 p1={
 	x=16,y=100,
-	y_vel=0,
+	dx=0,y_vel=0,
 	w=8,h=16,
 	lft=nil,--left x
 	rgt=nil,--right x
@@ -81,14 +81,15 @@ function p1.read_inputs()
 		p1.landed=false
 	end
 	
+	p1.dx=0
 	if btn(➡️) then
-		p1.x+=walk_speed
+		p1.dx+=walk_speed
 		if p1.facing<0 then
 			p1.facing*=-1
 		end
 	end
 	if btn(⬅️) then
-	 p1.x-=walk_speed
+	 p1.dx-=walk_speed
 	 if p1.facing>0 then
 	 	p1.facing*=-1
 	 end
@@ -134,6 +135,65 @@ function p1.stand_detection()
 end
 
 function p1.move()
+	--determine wall collision
+	--with four candidates
+	--1. top ray
+	--2. mid ray
+	--3. btm ray
+	--4. vel ray
+	cand_tx=p1.lft
+	cand_ty=p1.top
+	cand_mx=p1.lft
+	cand_my=p1.mdl
+	cand_bx=p1.lft
+	cand_by=p1.btm
+	if p1.dx>0 then
+		--cast rays to right
+		--top ray
+		while fget(mget(cand_tx/8,cand_ty/8),4)==false do
+			cand_tx+=1
+		end
+		cand_tx-=p1.w
+		--mdl ray
+		while fget(mget(cand_mx/8,cand_my/8),4)==false do
+			cand_mx+=1
+		end
+		cand_mx-=p1.w
+		--btm ray
+		while fget(mget(cand_bx/8,cand_by/8),4)==false do
+			cand_bx+=1
+		end
+		cand_bx-=p1.w
+	elseif p1.dx<0 then
+		--cast rays to left
+		--top ray
+		while fget(mget(cand_tx/8,cand_ty/8),4)==false do
+			cand_tx-=1
+		end
+		cand_tx+=1
+		--mdl ray
+		while fget(mget(cand_mx/8,cand_my/8),4)==false do
+			cand_mx-=1
+		end
+		cand_mx+=1
+		--btm ray
+		while fget(mget(cand_bx/8,cand_by/8),4)==false do
+			cand_bx-=1
+		end
+		cand_bx+=1
+	end
+	cand_vx=p1.x+p1.dx
+	
+	if p1.dx>0 then
+		--facing right, so pick the
+		--smallest (leftmost number)
+		p1.x=min(cand_vx,min(cand_mx,min(cand_tx,cand_bx)))
+	elseif p1.dx<0 then
+		--facing left, so pick the
+		--largest (rightmost number)
+		p1.x=max(cand_vx,max(cand_mx,max(cand_tx,cand_bx)))
+	end
+	
 	--this is the landing algo.
 	--it ensures you never pass
 	--through platforms no matter
@@ -233,27 +293,50 @@ function p1.draw(debug)
 	
 	if debug then
 		
-		if true then
+		if false then
+			--print/draw wall detection
+			
+			--print numbers
+			print(cand_tx,10,10,15)
+			print(cand_mx,10,16,15)
+			print(cand_vx,10,22,15)
+			print(cand_bx,10,28,15)
+			
+			--draw rays
+			if p1.dx>0 then
+				--moving right
+				line(p1.rgt,p1.top,cand_tx+p1.w-1,cand_ty,11)
+				line(p1.rgt,p1.mdl,cand_mx+p1.w-1,cand_my,11)
+				line(p1.rgt,(p1.mdl+p1.btm)/2,cand_vx+p1.w-1,(p1.mdl+p1.btm)/2,11)
+				line(p1.rgt,p1.btm,cand_bx+p1.w-1,cand_by,11)
+			elseif p1.dx<0 then
+				--moving left
+				line(p1.lft,p1.top,cand_tx,cand_ty,11)
+				line(p1.lft,p1.mdl,cand_mx,cand_my,11)
+				line(p1.lft,(p1.mdl+p1.btm)/2,cand_vx,(p1.mdl+p1.btm)/2,11)
+				line(p1.lft,p1.btm,cand_bx,cand_by,11)
+			end
+		end
+		
+		if false then
 			--print/draw bonk/land
 			--detection
-			print(cand_ly,10,30,15)
-			if p1.y_vel>=0 then
+			
+			--print numbers
+			print(cand_ly,30,30,15)--lft
+			print(cand_vy,40,36,15)--vel
+			print(cand_ry,50,42,15)--rgt
+			
+			--draw rays
+			if p1.y_vel>0 then
+				--falling
 				line(p1.lft,p1.btm,cand_lx,cand_ly+p1.h-1,11)
-			else
-				line(p1.lft,p1.top,cand_lx,cand_ly,11)
-			end
-			
-			print(cand_vy,20,36,15)
-			if p1.y_vel>=0 then
 				line(p1.ctr,p1.btm,p1.ctr,cand_vy+p1.h-1,11)
-			else
-				line(p1.ctr,p1.top,p1.ctr,cand_vy,11)
-			end
-			
-			print(cand_ry,30,42,15)
-			if p1.y_vel>=0 then
 				line(p1.rgt,p1.btm,cand_rx,cand_ry+p1.h-1,11)
-			else
+			elseif p1.y_vel<0 then
+				--rising
+				line(p1.lft,p1.top,cand_lx,cand_ly,11)
+				line(p1.ctr,p1.top,p1.ctr,cand_vy,11)
 				line(p1.rgt,p1.top,cand_rx,cand_ry,11)
 			end
 		end
