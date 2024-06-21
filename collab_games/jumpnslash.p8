@@ -34,10 +34,10 @@ num | hex  | color  | meaning
 ---------------------------
  0  | 0x1  | red    | hurts player
  1  | 0x2  | orange |
- 2  | 0x4  | yellow | player can pass thru bottom
+ 2  | 0x4  | yellow | 
  3  | 0x8  | green  | player can land on top of
- 4  | 0x10 | blue   |
- 5  | 0x20 | gray   |
+ 4  | 0x10 | blue   | player cannot pass thru sides
+ 5  | 0x20 | gray   | player cannot pass thru bottom
  6  | 0x40 | pink   |
  7  | 0x80 | tan    |
 ]]
@@ -83,9 +83,15 @@ function p1.read_inputs()
 	
 	if btn(➡️) then
 		p1.x+=walk_speed
+		if p1.facing<0 then
+			p1.facing*=-1
+		end
 	end
 	if btn(⬅️) then
 	 p1.x-=walk_speed
+	 if p1.facing>0 then
+	 	p1.facing*=-1
+	 end
 	end
 	
 	p1.update_landmarks()
@@ -127,7 +133,7 @@ function p1.stand_detection()
 	return not(fget(tile_id_l,3) or fget(tile_id_r,3))
 end
 
-function p1.move()	
+function p1.move()
 	--this is the landing algo.
 	--it ensures you never pass
 	--through platforms no matter
@@ -158,17 +164,31 @@ function p1.move()
 	
 	--determine candidate l
 	--using raycasting
-	cand_ly=p1.top
 	cand_lx=p1.lft
-	while fget(mget(cand_lx/8,(cand_ly+p1.h)/8),3)==false do
+	cand_ly=p1.top
+	if p1.y_vel>=0 then
+		while fget(mget(cand_lx/8,(cand_ly+p1.h)/8),3)==false do
+			cand_ly+=1
+		end
+	else
+		while fget(mget(cand_lx/8,cand_ly/8),5)==false do
+			cand_ly-=1
+		end
 		cand_ly+=1
 	end
 	
 	--determine candidate r
 	--using raycasting
-	cand_ry=p1.top
 	cand_rx=p1.rgt
-	while fget(mget(cand_rx/8,(cand_ry+p1.h)/8),3)==false do
+	cand_ry=p1.top
+	if p1.y_vel>=0 then
+		while fget(mget(cand_rx/8,(cand_ry+p1.h)/8),3)==false do
+			cand_ry+=1
+		end
+	else
+		while fget(mget(cand_rx/8,cand_ry/8),5)==false do
+			cand_ry-=1
+		end
 		cand_ry+=1
 	end
 	
@@ -176,12 +196,22 @@ function p1.move()
 	--using velocity
 	cand_vy=p1.y+p1.y_vel
 	
-	p1.y=min(cand_vy,min(cand_ly,cand_ry))
-	
-	if p1.landed==false then
-		p1.y_vel+=gravity
+	if p1.y_vel>=0 then
+		p1.y=min(cand_vy,min(cand_ly,cand_ry))
 	else
+		p1.y=max(cand_vy,max(cand_ly,cand_ry))
+		if p1.y==cand_ly or p1.y==cand_ry then
+			p1.y_vel=0
+		end
+	end
+	
+	if p1.landed==true then
 		p1.y_vel=0
+	elseif p1.bonked==true then
+		p1.y_vel=0
+		p1.bonked=false
+	else
+		p1.y_vel+=gravity
 	end
 end
 
@@ -197,28 +227,39 @@ end
 function p1.draw(debug)
 	sspr(8,0,
 	     8,16,
-	     p1.x,p1.y)
+	     p1.x,p1.y,
+	     8,16,
+	     p1.facing==-1,false)
 	
 	if debug then
-		if true then
-			--print bonk detection
-			print(p1.bonked,10,10,15)
-		end
 		
 		if true then
-			--print/draw land detection
+			--print/draw bonk/land
+			--detection
 			print(cand_ly,10,30,15)
-			line(p1.lft,p1.btm,cand_lx,cand_ly+p1.h-1,11)
+			if p1.y_vel>=0 then
+				line(p1.lft,p1.btm,cand_lx,cand_ly+p1.h-1,11)
+			else
+				line(p1.lft,p1.top,cand_lx,cand_ly,11)
+			end
 			
 			print(cand_vy,20,36,15)
-			line(p1.ctr,p1.btm,p1.ctr,cand_vy+p1.h-1,11)
+			if p1.y_vel>=0 then
+				line(p1.ctr,p1.btm,p1.ctr,cand_vy+p1.h-1,11)
+			else
+				line(p1.ctr,p1.top,p1.ctr,cand_vy,11)
+			end
 			
 			print(cand_ry,30,42,15)
-			line(p1.rgt,p1.btm,cand_rx,cand_ry+p1.h-1,11)
+			if p1.y_vel>=0 then
+				line(p1.rgt,p1.btm,cand_rx,cand_ry+p1.h-1,11)
+			else
+				line(p1.rgt,p1.top,cand_rx,cand_ry,11)
+			end
 		end
 		
 		--draw landmark pixels
-		if true then
+		if false then
 			local pcol=8
 			--draw top left corner pixel
 			pset(p1.lft,
@@ -275,7 +316,7 @@ __gfx__
 0000000001111110000bb00009999990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000111100bbb0000000999900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-000000000000000008010c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000380108000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0808080808080808080808080808080800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
