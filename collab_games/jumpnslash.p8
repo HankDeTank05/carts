@@ -46,7 +46,7 @@ num | hex  | color  | meaning
 
 p1={
 	x=16,y=100,
-	x_vel=0,y_vel=0,
+	y_vel=0,
 	w=8,h=16,
 	lft=nil,--left x
 	rgt=nil,--right x
@@ -68,11 +68,7 @@ function p1.update()
 	p1.platform_collision()
 	
 	--apply forces
-	p1.y+=p1.y_vel
-	if p1.landed==false then
-		p1.y_vel+=gravity
-	end
-	p1.x+=p1.x_vel
+	p1.move()
 	
 	p1.update_landmarks()
 	
@@ -86,22 +82,13 @@ function p1.read_inputs()
 	end
 	
 	if btn(➡️) then
-		p1.x+=1
+		p1.x+=walk_speed
 	end
 	if btn(⬅️) then
-	 p1.x-=1
+	 p1.x-=walk_speed
 	end
 	
 	p1.update_landmarks()
-end
-
-function p1.update_landmarks()
-	p1.lft=p1.x
-	p1.rgt=p1.x+p1.w-1
-	p1.top=p1.y
-	p1.btm=p1.y+p1.h-1
-	p1.ctr=(p1.lft+p1.rgt)/2
-	p1.mdl=(p1.top+p1.btm)/2
 end
 
 function p1.platform_collision()
@@ -119,10 +106,6 @@ function p1.platform_collision()
 	if p1.y_vel>=0 then
 		--check both btm corners
 		p1.landed=p1.land_detection()
-		if p1.landed==true then
-			p1.y_vel=0
-			p1.stand_correction()
-		end
 	end
 	
 end
@@ -135,6 +118,7 @@ function p1.land_detection()
 	return fget(tile_id_l,3) or fget(tile_id_r,3)
 end
 
+
 function p1.stand_detection()
 	--checks the bottom row of the
 	--sprite
@@ -143,30 +127,71 @@ function p1.stand_detection()
 	return not(fget(tile_id_l,3) or fget(tile_id_r,3))
 end
 
-function p1.stand_correction()
-	--stand correction ensures
-	--that if you land inside of a
-	--tile, your position will be
-	--adjusted such that you will
-	--stand on top of that tile,
-	--rather than remain inside it
+function p1.move()	
+	--this is the landing algo.
+	--it ensures you never pass
+	--through platforms no matter
+	--how fast you're falling.
 	
-	--land detection checks if the
-	--row of pixels below the
-	--bottom of the sprite have
-	--collided with a landable
-	--tile
+	--every frame, two rays are
+	--cast straight downwards from
+	--both the left and right
+	--edges of the sprite.
 	
-	--stand correction works by
-	--making sure the bottom row
-	--of a sprite is -not- inside
-	--a landable tile, and that
-	--the row below it -is-
+	--from each of these rays, a
+	--"candidate" landing height
+	--is determined
 	
-	while p1.stand_detection()==false do
-		p1.y-=1
-		p1.update_landmarks()
+	--we also determine a third
+	--candidate landing height
+	--based on the current y-pos
+	--and y-vel.
+	
+	--the highest candidate height
+	--(vertically nearest below
+	--the sprite) is chosen
+	
+	--this way, if you're falling
+	--faster than 8 pix/frame you
+	--will not pass through a
+	--one-tile-tall platform
+	
+	--determine candidate l
+	--using raycasting
+	cand_ly=p1.top
+	cand_lx=p1.lft
+	while fget(mget(cand_lx/8,(cand_ly+p1.h)/8),3)==false do
+		cand_ly+=1
 	end
+	
+	--determine candidate r
+	--using raycasting
+	cand_ry=p1.top
+	cand_rx=p1.rgt
+	while fget(mget(cand_rx/8,(cand_ry+p1.h)/8),3)==false do
+		cand_ry+=1
+	end
+	
+	--determine candidate v
+	--using velocity
+	cand_vy=p1.y+p1.y_vel
+	
+	p1.y=min(cand_vy,min(cand_ly,cand_ry))
+	
+	if p1.landed==false then
+		p1.y_vel+=gravity
+	else
+		p1.y_vel=0
+	end
+end
+
+function p1.update_landmarks()
+	p1.lft=p1.x
+	p1.rgt=p1.x+p1.w-1
+	p1.top=p1.y
+	p1.btm=p1.y+p1.h-1
+	p1.ctr=(p1.lft+p1.rgt)/2
+	p1.mdl=(p1.top+p1.btm)/2
 end
 	
 function p1.draw(debug)
@@ -175,11 +200,22 @@ function p1.draw(debug)
 	     p1.x,p1.y)
 	
 	if debug then
-		--print bonk detection
-		print(p1.bonked,10,10,15)
-		--print land detection
-		print(p1.stand_detection(),10,16,15)
-		print(p1.landed,10,22,15)
+		if true then
+			--print bonk detection
+			print(p1.bonked,10,10,15)
+		end
+		
+		if true then
+			--print/draw land detection
+			print(cand_ly,10,30,15)
+			line(p1.lft,p1.btm,cand_lx,cand_ly+p1.h-1,11)
+			
+			print(cand_vy,20,36,15)
+			line(p1.ctr,p1.btm,p1.ctr,cand_vy+p1.h-1,11)
+			
+			print(cand_ry,30,42,15)
+			line(p1.rgt,p1.btm,cand_rx,cand_ry+p1.h-1,11)
+		end
 		
 		--draw landmark pixels
 		if true then
