@@ -14,15 +14,15 @@ function _init()
 	diry={ 0, 0,-1, 1,-1, 1,-1, 1}
 	-- i = 1  2  3  4  5  6  7  8
 	
-	--assumption: every anim is 4
-	--frames, and are contiguous
-	--on the spritesheet, so we
-	--only store the first frame
-	--of animation
-	mob_anim={
-		240,--kind #1: player
-		192,--kind #2: slime
-	}
+	--assumption: every anim is 4 frames, and are contiguous on the spritesheet, so we only store the first frame of animation
+	mob_anim={240,192}--animations
+	mob_atk ={  1,  1}--dmg vals
+	mob_hp  ={  5,  2}--hp vals
+	--  kind=  1   2
+	------------------------------
+	--kind #1: player
+	--kind #2: slime
+	
 	
 	_update_state=update_game
 	_draw_state=draw_game
@@ -32,11 +32,13 @@ end
 function _update60()
 	t+=1
 	_update_state()
+	update_flt_txt()--ew, i don't like that this is here
 end
 
 function _draw()
 	_draw_state()
 	draw_windows()
+	--arghhhh why isn't floating text always being drawn if it is always being updated?!?!?!?!
 end
 
 function start_game()
@@ -45,22 +47,19 @@ function start_game()
 	mobs={}
 	p1=addmob(1,1,1)--kind #1=player
 	addmob(2,2,3)--kind #2=slime
-
-	--[[	
-	p_x=1--player x-pos (map x)
-	p_y=1--player y-pos (map y)
-	p_xoff=0--x-offset, for smooth movement between map tiles
-	p_yoff=0--y-offset, for smooth movement between map tiles
-	p_start_xoff=0
-	p_start_yoff=0
-	p_flip=false
-	p_move=nil--which anim should we play?
-	--]]
+	addmob(2,1,10)--kind #2=slime
+	addmob(2,3,11)--kind #2=slime
+	addmob(2,7,12)--kind #2=slime
 	
 	p_t=0--animation timer
 	
 	windows={}
+	flt_txt={}
 	talkbox=nil
+	
+	base_color=12
+	dmg_num_col=9
+	dmg_spr_col=8
 end
 -->8
 --tab 1: update states
@@ -99,34 +98,6 @@ end
 function update_gameover()
 end
 
-function move_walk(_mob,_anim_t)
-	--mob moves smoothly from one
-	--tile to the next
-	
-	--_mob: the mob to animate
-	--_anim_t: animation timer
-	
-	_mob.xoff=_mob.xoff_start*(1-_anim_t)
-	_mob.yoff=_mob.yoff_start*(1-_anim_t)
-end
-
-function move_bump(_mob,_anim_t)
-	--mob bumps into a tile and
-	--then moves back
-	
-	--_mob: the mob to animate
-	--_anim_t: animation timer
-
-	local tmr=_anim_t
-	
-	if _anim_t>0.5 then
-		tmr=1-_anim_t
-	end
-	
-	_mob.xoff=_mob.xoff_start*tmr
-	_mob.yoff=_mob.yoff_start*tmr
-end
-
 function buffer_input()
 	if input_buf==-1 then
 		input_buf=get_input()
@@ -158,20 +129,31 @@ function draw_game()
 	cls()
 	map()
 	
-	--[[draw player
-	drawspr(getframe(p_anim),
-	        p_x*8+p_xoff,
-	        p_y*8+p_yoff,
-	        12,
-	        p_flip)]]
-	
 	--draw mobs
 	for m in all(mobs) do
+		
+		--determine draw color
+		local colr=base_color
+		if m.flash>0 then
+			m.flash-=1
+			colr=dmg_spr_col
+		end
+		
+		--draw the mob
 		drawspr(getframe(m.anim),
 		        m.x*8+m.xoff,
 		        m.y*8+m.yoff,
-		        12,
+		        colr,
 		        m.spr_flip)
+		        
+		--draw floating text
+		for f in all(flt_txt) do
+			print_oline(f.txt,
+			            f.x,
+			            f.y,
+			            f.col,
+			            0)
+		end
 	end
 end
 
@@ -241,39 +223,21 @@ function moveplayer(_dx,_dy)
 	local dest_y=p1.y+_dy
 	local tile=mget(dest_x,dest_y)
 	
-	--change player facing dir,
-	--if necessary
-	if _dx<0 then
-		p1.spr_flip=true
-	elseif _dx>0 then
-		p1.spr_flip=false
-	end
-	
 	if is_walkable(dest_x,dest_y,"checkmobs") then
 		--no wall, proceed!
 		sfx(63)
-		p1.x+=_dx
-		p1.y+=_dy
-		p1.xoff_start=_dx*-8
-		p1.yoff_start=_dy*-8
-		p1.xoff=p1.xoff_start
-		p1.yoff=p1.yoff_start
+		mob_walk(p1,_dx,_dy)
 		p_t=0
 		_update_state=update_pturn
-		p1.spr_move=move_walk
 	else
 		--not walkable... why tho?
-		--three possible options
+		--three possible options:
 		--1. you hit a wall (ouch!)
 		--2. you hit a mob (ouch...?)
 		--3. you hit an interactible
-		p1.xoff_start=_dx*8
-		p1.yoff_start=_dy*8
-		p1.xoff=0
-		p1.yoff=0
+		mob_bump(p1,_dx,_dy)
 		p_t=0
 		_update_state=update_pturn
-		p1.spr_move=move_bump
 		
 		local mob=getmob(dest_x,dest_y)
 		if mob==false then
@@ -282,7 +246,8 @@ function moveplayer(_dx,_dy)
 				triggerbump(tile,dest_x,dest_y)
 			end
 		else
-			hitmob(p1,mob)
+			sfx(58)
+			hit_mob(p1,mob)
 		end
 	end
 end
@@ -367,14 +332,29 @@ function is_inbounds(_x,_y)
 	return not(_x<0 or 15<_x or _y<0 or 15<_y)
 end
 
-function hitmob(_atkr,_defr)
+function hit_mob(_atkr,_defr)
 	--_atkr: the attacking mob
 	--_defr: the defending mob
 	
-	--code goes here
+	local dmg=_atkr.atk
+	_defr.hp-=dmg
+	
+	add_flt_txt("-"..dmg,
+	            _defr.x*8,
+	            _defr.y*8,
+	            dmg_num_col)
+	
+	_defr.flash=10--frames
+	if _defr.hp<=0 then
+		--what if _defr is player...?
+		del(mobs,_defr)
+	end
 end
 -->8
 --tab 5: ui
+
+flt_dy=10--the total delta-y for floater text
+flt_dur=70--the duration (frames) floater text lasts for
 
 function addwindow(_x,_y,_w,_h,_txt)
 	local w={x=_x,
@@ -440,6 +420,33 @@ function showmsg(_lines)
 	talkbox=addwindow(16,50,94,#_lines*6+7,_lines)
 	talkbox.wait=true
 end
+
+function add_flt_txt(_txt,_x,_y,_col)
+	--adds a piece of floating txt
+	
+	--_txt: the text to display
+	--_x: the x-pos on screen
+	--_y: the y-pos on screen
+	--_col: text color
+	add(flt_txt,{
+		txt=_txt,
+		x=_x,
+		y=_y,
+		col=_col,
+		y_tgt=_y-flt_dy,--ending y-pos
+		timer=0,
+	})
+end
+
+function update_flt_txt()
+	for f in all(flt_txt) do
+		f.y+=(f.y_tgt-f.y)/flt_dy
+		f.timer+=1
+		if f.timer>flt_dur then
+			del(flt_txt,f)
+		end
+	end
+end
 -->8
 --tab 6: mobs
 
@@ -454,6 +461,10 @@ function addmob(_kind,_mx,_my)
 		spr_flip=false,--for facing direction
 		spr_move=nil,--which anim should we play?
 		anim={},
+		flash=0,
+		hp=mob_hp[_kind],
+		hp_max=mob_hp[_kind],
+		atk=mob_atk[_kind],
 	}
 	
 	for i=0,3 do
@@ -463,6 +474,86 @@ function addmob(_kind,_mx,_my)
 	add(mobs,m)
 	
 	return m
+end
+
+function mob_walk(_mob,_dx,_dy)
+	--_mob: the mob to animate
+	--_dx: delta-x
+	--_dy: delta-y
+	
+	--change mob facing dir, if
+	--necessary
+	mob_facing(_mob,_dx)
+		
+	_mob.x+=_dx--probably shouldn't
+	_mob.y+=_dy--do this...
+	
+	_mob.xoff_start=_dx*-8
+	_mob.yoff_start=_dy*-8
+	
+	_mob.xoff=_mob.xoff_start
+	_mob.yoff=_mob.yoff_start
+	
+	_mob.spr_move=anim_walk
+end
+
+function mob_bump(_mob,_dx,_dy)
+	--_mob: the mob to animate
+	--_dx: delta-x
+	--_dy: delta-y
+	
+	--change mob facing dir, if
+	--necessary
+	mob_facing(_mob,_dx)
+	
+	_mob.xoff_start=_dx*8
+	_mob.yoff_start=_dy*8
+	_mob.xoff=0
+	_mob.yoff=0
+	_mob.spr_move=anim_bump
+end
+
+function anim_walk(_mob,_anim_t)
+	--mob moves smoothly from one
+	--tile to the next
+	
+	--_mob: the mob to animate
+	--_anim_t: animation timer
+	
+	_mob.xoff=_mob.xoff_start*(1-_anim_t)
+	_mob.yoff=_mob.yoff_start*(1-_anim_t)
+end
+
+function anim_bump(_mob,_anim_t)
+	--mob bumps into a tile and
+	--then moves back
+	
+	--_mob: the mob to animate
+	--_anim_t: animation timer
+
+	local tmr=_anim_t
+	
+	if _anim_t>0.5 then
+		tmr=1-_anim_t
+	end
+	
+	_mob.xoff=_mob.xoff_start*tmr
+	_mob.yoff=_mob.yoff_start*tmr
+end
+
+function mob_facing(_mob,_dx)
+	--set the facing direction of
+	--a mob, based on it's
+	--left/right movement
+	
+	--_mob: the mob to act on
+	--_dx: the delta-x for the mob
+	
+	if _dx<0 then
+		_mob.spr_flip=true
+	elseif _dx>0 then
+		_mob.spr_flip=false
+	end
 end
 __gfx__
 000000000000000060666060000000000000000000000000cccccccc00ccc00000ccc00000000000000000000000000000ccc000c0ccc0c0c000000055555550
@@ -671,8 +762,8 @@ __sfx__
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00010000211402114012140281400d6400d6401964000000116300000010620000000b61000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000100001c61005520055301964015650126500f6500c650096400764005630036200162000620006100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000100001f5302b5302e5302e5300000000000000002751027510285102a510000000000000000275102951029510000000000000000000002451024510245102751029510000000000000000000000000000000
 000100001f0301f03015030150302a23025230202101d2101b2101821016210142101321012210102100f2100e2100c2100a21009210092100721007210072100621006210062100621000000000000000000000
 000100002003020030130301303032010320103401029010290102601026000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
