@@ -249,7 +249,7 @@ function moveplayer(_dx,_dy)
 		p1.spr_flip=false
 	end
 	
-	if is_walkable(dest_x,dest_y) then
+	if is_walkable(dest_x,dest_y,"checkmobs") then
 		--no wall, proceed!
 		sfx(63)
 		p1.x+=_dx
@@ -262,7 +262,11 @@ function moveplayer(_dx,_dy)
 		_update_state=update_pturn
 		p1.spr_move=move_walk
 	else
-		--you've hit a wall (ouch!)
+		--not walkable... why tho?
+		--three possible options
+		--1. you hit a wall (ouch!)
+		--2. you hit a mob (ouch...?)
+		--3. you hit an interactible
 		p1.xoff_start=_dx*8
 		p1.yoff_start=_dy*8
 		p1.xoff=0
@@ -271,9 +275,14 @@ function moveplayer(_dx,_dy)
 		_update_state=update_pturn
 		p1.spr_move=move_bump
 		
-		--if interactible...
-		if fget(tile,1) then
-			triggerbump(tile,dest_x,dest_y)
+		local mob=getmob(dest_x,dest_y)
+		if mob==false then
+			--if interactible...
+			if fget(tile,1) then
+				triggerbump(tile,dest_x,dest_y)
+			end
+		else
+			hitmob(p1,mob)
 		end
 	end
 end
@@ -321,13 +330,31 @@ function getmob(_x,_y)
 	return false
 end
 
-function is_walkable(_x,_y)
+function is_walkable(_x,_y,_mode)
 	--_x: map x-coordinate
 	--_y: map y-coordinate
+	--_mode: ???
+	
+	if _mode==nil then
+		mode=""
+	end
+	
+	--is xy on screen?
 	if is_inbounds(_x,_y) then
+		
+		--is xy not solid?
 		local tile=mget(_x,_y)
 		if fget(tile,0)==false then
-			return true
+			
+			--are we checking for mobs?
+			if _mode=="checkmobs" then
+				
+				--is there a mob at xy?
+				return getmob(_x,_y)==false
+				
+			else
+				return true
+			end
 		end
 	end
 	
@@ -339,7 +366,13 @@ function is_inbounds(_x,_y)
 	--_y: map y-coordinate
 	return not(_x<0 or 15<_x or _y<0 or 15<_y)
 end
+
+function hitmob(_atkr,_defr)
+	--_atkr: the attacking mob
+	--_defr: the defending mob
 	
+	--code goes here
+end
 -->8
 --tab 5: ui
 
