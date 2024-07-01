@@ -26,6 +26,7 @@ function _init()
 	
 	_update_state=update_game
 	_draw_state=draw_game
+	debug={}
 	start_game()
 end
 
@@ -37,8 +38,12 @@ end
 
 function _draw()
 	_draw_state()
-	draw_windows()
-	--arghhhh why isn't floating text always being drawn if it is always being updated?!?!?!?!
+	draw_windows()--arghhhh why isn't floating text always being drawn if it is always being updated?!?!?!?!
+	cursor(4,4)
+	color(8)
+	for txt in all(debug) do
+		print(txt)
+	end
 end
 
 function start_game()
@@ -111,7 +116,7 @@ function update_cputurn()
 	p_t=min(p_t+p_t_increment,1)
 	
 	for m in all(mobs) do
-		if m!=p1 then
+		if m!=p1 and m.spr_move!=nil then
 			m.spr_move(m,p_t)
 		end
 	end
@@ -593,29 +598,45 @@ function mob_facing(_mob,_dx)
 end
 
 function update_cpu_ai()
+	--debug={}
 	for m in all(mobs) do
 		--make sure we don't affect
 		--the player
 		if m!=p1 then
-			local closest=999
-			local close_x=0
-			local close_y=0
-			for i=0,3 do
-				local dx=dirx[i+1]
-				local dy=diry[i+1]
-				local distance=dist(m.x+dx,
-				                    m.y+dy,
-				                    p1.x,
-				                    p1.y)
-				if distance<closest then
-					closest=distance
-					close_x=dx
-					close_y=dy
+			m.spr_move=nil
+			if dist(m.x,m.y,p1.x,p1.y)==1 then
+				--attack player
+				local dx=p1.x-m.x
+				local dy=p1.y-m.y
+				mob_bump(m,dx,dy)
+				hit_mob(m,p1)
+				sfx(57)
+			else
+				--move toward player
+				local closest=999
+				local close_x=0
+				local close_y=0
+				for i=0,3 do
+					local dx=dirx[i+1]--delta-x
+					local dy=diry[i+1]--delta-y
+					local tx=m.x+dx--target x
+					local ty=m.y+dy--target y
+					if is_walkable(tx,ty,"checkmobs") then
+						local distance=dist(tx,
+						                    ty,
+						                    p1.x,
+						                    p1.y)
+						if distance<closest then
+							closest=distance
+							close_x=dx
+							close_y=dy
+						end
+					end
 				end
+				mob_walk(m,close_x,close_y)
+				_update_state=update_cputurn
+				p_t=0
 			end
-			mob_walk(m,close_x,close_y)
-			_update_state=update_cputurn
-			p_t=0
 		end
 	end
 end
