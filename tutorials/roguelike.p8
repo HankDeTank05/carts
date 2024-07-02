@@ -2,9 +2,19 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 --lazy devs roguelike tutorial
+	
+base_color=12
+dmg_num_col=9
+dmg_spr_col=8
 
 function _init()
 	t=0 --frame count
+	
+	dpal={      0,  1,  1,
+	        2,  1, 13,  6,
+	        4,  4,  9,  3,
+	       13,  1, 13, 14}
+	
 	p_anim={240,241,242,243}
 	
 	--     0  1  2  3
@@ -36,6 +46,7 @@ end
 function _draw()
 	_draw_state()
 	draw_windows()--arghhhh why isn't floating text always being drawn if it is always being updated?!?!?!?!
+	check_fade()
 	cursor(4,4)
 	color(8)
 	for txt in all(debug) do
@@ -44,6 +55,7 @@ function _draw()
 end
 
 function start_game()
+	fadepcent=1
 	input_buf=-1
 	
 	mobs={}
@@ -65,10 +77,6 @@ function start_game()
 	windows={}
 	flt_txt={}
 	talkbox=nil
-	
-	base_color=12
-	dmg_num_col=9
-	dmg_spr_col=8
 	
 	_update_state=update_game
 	_draw_state=draw_game
@@ -132,6 +140,7 @@ end
 
 function update_gameover()
 	if btnp(❎) then
+		fade_out()
 		start_game()
 	end
 end
@@ -278,6 +287,46 @@ function dist(x1,y1,x2,y2)
 	--down, remove the sqrt to
 	--save on computational cost
 	return sqrt(dx*dx+dy*dy)
+end
+
+function fade()
+	local p=flr(mid(0,fadepcent,1)*100)
+	local kmax
+	local col
+	local k
+	for j=1,15 do
+		col=j
+		kmax=flr((p+(j*1.46))/22)
+		for k=1,kmax do
+			col=dpal[col]
+		end
+		pal(j,col,1)
+	end
+end
+
+function check_fade()
+	if fadepcent>0 then
+		fadepcent=max(fadepcent-0.04,0)
+		fade()
+	end
+end
+
+function wait(_wait)
+	repeat
+		_wait-=1
+		flip()
+	until _wait<0
+end
+
+function fade_out(_spd,_wait)
+	if _spd==nil then _spd=0.04 end
+	if _wait==nil then _wait=0 end
+	repeat
+		fadepcent=min(fadepcent+_spd,1)
+		fade()
+		flip()
+	until fadepcent==1
+	wait(_wait)
 end
 -->8
 --tab 4: gameplay
@@ -426,6 +475,7 @@ function check_end()
 		--ur ded lol get rekt
 		_update_state=update_gameover
 		_draw_state=draw_gameover
+		fade_out(0.02)
 		return false
 	end
 end
@@ -525,6 +575,12 @@ function update_flt_txt()
 			del(flt_txt,f)
 		end
 	end
+end
+
+function update_hp_box()
+	hp_box.txt[1]="♥"..p1.hp.."/"..p1.hp_max
+	hp_box=addwindow(5,5,28,13,{"♥5/5"})
+	
 end
 -->8
 --tab 6: mobs
